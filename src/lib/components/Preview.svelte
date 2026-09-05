@@ -1,72 +1,43 @@
 <script lang="ts">
-	import AppWindow from '@lucide/svelte/icons/app-window';
+	import Viewer from '@sveltejs/repl/viewer';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import WandSparkles from '@lucide/svelte/icons/wand-sparkles';
 	import X from '@lucide/svelte/icons/x';
-	import { buildPreviewDocument } from '$lib/artifact';
 	import type { Studio } from '$lib/studio.svelte';
 
 	let { studio }: { studio: Studio } = $props();
 
-	let iframeEl = $state<HTMLIFrameElement | null>(null);
-	let errors = $state<string[]>([]);
+	let dismissed = $state<string | null>(null);
 
-	const doc = $derived(studio.previewCode ? buildPreviewDocument(studio.previewCode) : '');
-
-	// Each run starts with a clean slate of errors.
-	$effect(() => {
-		void studio.runId;
-		errors = [];
-	});
-
-	function onMessage(event: MessageEvent) {
-		// Only trust messages from our own (sandboxed, origin "null") iframe.
-		if (!iframeEl || event.source !== iframeEl.contentWindow) return;
-		const data = event.data as { __studio?: string; message?: string } | null;
-		if (data?.__studio === 'runtime_error' && typeof data.message === 'string') {
-			if (errors.length < 5 && !errors.includes(data.message)) {
-				errors.push(data.message);
-			}
-		}
-	}
+	// One error surface: runtime errors from the iframe, or bundle failures.
+	const activeError = $derived(
+		studio.previewError ?? ((studio.bundler.result?.error as Error | undefined) || null)
+	);
+	const showToast = $derived(activeError !== null && dismissed !== activeError?.message);
 
 	function askAiToFix() {
-		const report = errors.join('\n');
-		errors = [];
+		if (!activeError) return;
+		const report = `${activeError.name ?? 'Error'}: ${activeError.message}`;
+		studio.previewError = null;
 		studio.pinTab('preview');
-		void studio.send('The preview throws a runtime error — please fix it.', { errorReport: report });
+		void studio.send('The app has an error — please fix it.', { errorReport: report });
 	}
 </script>
 
-<svelte:window onmessage={onMessage} />
-
 <div class="preview">
-	{#if !doc}
-		<!-- empty: nothing has been run yet -->
-		<div class="empty">
-			<AppWindow size={40} strokeWidth={1.25} aria-hidden="true" />
-			<p class="empty-title">Nothing running yet</p>
-			<p class="empty-hint">Ask the AI to build something — the app will appear here.</p>
-		</div>
-	{:else}
-		{#key studio.runId}
-			<iframe
-				bind:this={iframeEl}
-				title="App preview"
-				srcdoc={doc}
-				sandbox="allow-scripts allow-forms allow-modals"
-			></iframe>
-		{/key}
-	{/if}
+	<Viewer
+		bundler={studio.bundler}
+		bind:error={studio.previewError}
+		status={studio.bundlerStatus}
+		theme="dark"
+	/>
 
-	{#if errors.length > 0}
+	{#if showToast && activeError}
 		<div class="error-toast" role="alert">
 			<TriangleAlert size={15} aria-hidden="true" />
 			<div class="error-text">
-				<p class="error-title">
-					{errors.length === 1 ? 'Runtime error' : `${errors.length} runtime errors`}
-				</p>
-				<p class="error-detail">{errors[0]}</p>
+				<p class="error-title">The app has an error</p>
+				<p class="error-detail">{activeError.message}</p>
 			</div>
 			<button
 				class="btn btn-outline fix"
@@ -76,7 +47,12 @@
 				<WandSparkles size={13} aria-hidden="true" />
 				Fix with AI
 			</button>
-			<button class="btn btn-icon" onclick={() => (errors = [])} title="Dismiss" aria-label="Dismiss errors">
+			<button
+				class="btn btn-icon"
+				onclick={() => (dismissed = activeError?.message ?? null)}
+				title="Dismiss"
+				aria-label="Dismiss error"
+			>
 				<X size={14} aria-hidden="true" />
 			</button>
 		</div>
@@ -90,40 +66,9 @@
 		min-height: 0;
 		background: var(--bg-inset);
 	}
-
-	iframe {
-		display: block;
-		width: 100%;
+	.preview > :global(.wrapper),
+	.preview > :global(:first-child) {
 		height: 100%;
-		border: none;
-		background: #fff;
-	}
-
-	.empty {
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		text-align: center;
-		color: var(--text-faint);
-		padding: 24px;
-	}
-	.empty > :global(svg) {
-		opacity: 0.4;
-		margin-bottom: 8px;
-	}
-	.empty-title {
-		margin: 0;
-		font-size: 15px;
-		font-weight: 500;
-		color: var(--text);
-	}
-	.empty-hint {
-		margin: 0;
-		font-size: 13px;
-		max-width: 280px;
 	}
 
 	.error-toast {
@@ -131,6 +76,7 @@
 		left: 14px;
 		right: 14px;
 		bottom: 14px;
+		z-index: 10;
 		display: flex;
 		align-items: center;
 		gap: 10px;

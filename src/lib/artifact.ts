@@ -1,72 +1,103 @@
 /**
- * Parsing of assistant output while it streams. The model is instructed to emit
- * at most one fenced ```html block containing a complete standalone document;
- * everything around the fence is chat prose.
+ * Parsing of assistant output while it streams. The model emits chat prose plus
+ * one fenced block per project file, tagged with its name:
+ *
+ *   ```svelte file=App.svelte
+ *   …complete file contents…
+ *   ```
+ *
+ * Everything outside those fences is prose.
  */
 
-export interface ParsedAssistantText {
-	/** Chat prose with the code fence removed. */
-	prose: string;
-	/** Content of the ```html fence, or null if the message has none (yet). */
-	code: string | null;
-	/** True once the closing fence has arrived — before that the code is still streaming. */
+export interface ParsedFile {
+	name: string;
+	contents: string;
+	/** True once the closing fence has arrived — before that the file is still streaming. */
 	closed: boolean;
 }
 
-const OPEN_FENCE = /```html[^\n]*\n/;
+export interface ParsedAssistantText {
+	/** Chat prose with all file fences removed. */
+	prose: string;
+	/** Files in emission order (a name emitted twice: the last one wins). */
+	files: ParsedFile[];
+}
+
+const OPEN_FENCE = /```[a-zA-Z0-9]*[ \t]+file=([^\s`]+)[ \t]*\r?\n/g;
+const CLOSE_FENCE = '\n```';
 
 export function parseAssistantText(raw: string): ParsedAssistantText {
-	const open = OPEN_FENCE.exec(raw);
-	if (!open) {
-		return { prose: stripDanglingFence(raw), code: null, closed: false };
+	const files: ParsedFile[] = [];
+	const proseParts: string[] = [];
+	let pos = 0;
+
+	OPEN_FENCE.lastIndex = 0;
+	for (;;) {
+		OPEN_FENCE.lastIndex = pos;
+		const open = OPEN_FENCE.exec(raw);
+		if (!open) {
+			proseParts.push(stripDanglingFence(raw.slice(pos)));
+			break;
+		}
+
+		proseParts.push(raw.slice(pos, open.index));
+		const name = open[1];
+		const bodyStart = open.index + open[0].length;
+		const closeIdx = raw.indexOf(CLOSE_FENCE, bodyStart);
+
+		if (closeIdx === -1) {
+			// Fence still open — the rest of the buffer is this file, still streaming.
+			upsert(files, { name, contents: raw.slice(bodyStart), closed: false });
+			break;
+		}
+
+		upsert(files, { name, contents: raw.slice(bodyStart, closeIdx), closed: true });
+		pos = closeIdx + CLOSE_FENCE.length;
+		// Skip trailing backticks/whitespace of the closing fence line.
+		while (raw[pos] === '`') pos += 1;
 	}
 
-	const before = raw.slice(0, open.index).trimEnd();
-	const rest = raw.slice(open.index + open[0].length);
-	const closeIdx = rest.indexOf('\n```');
+	const prose = proseParts
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.join('\n\n');
+	return { prose, files };
+}
 
-	if (closeIdx === -1) {
-		// Fence still open — everything received so far is code.
-		return { prose: before, code: rest, closed: false };
-	}
-
-	const code = rest.slice(0, closeIdx);
-	const after = rest
-		.slice(closeIdx + '\n```'.length)
-		.replace(/^`*/, '')
-		.trim();
-	const prose = after ? (before ? `${before}\n\n${after}` : after) : before;
-	return { prose, code, closed: true };
+function upsert(files: ParsedFile[], file: ParsedFile): void {
+	const existing = files.findIndex((f) => f.name === file.name);
+	if (existing === -1) files.push(file);
+	else files[existing] = file;
 }
 
 /**
- * While streaming, a partially received opening fence (e.g. "``" or "```ht")
- * would flash as prose for one frame — hold it back until it resolves.
+ * While streaming, a partially received opening fence (e.g. "``" or "```svelte fi")
+ * would flash as prose for one frame — hold the whole started line back.
  */
 function stripDanglingFence(text: string): string {
-	const m = /`{1,3}(?:h(?:t(?:m(?:l)?)?)?)?$/.exec(text);
-	return m ? text.slice(0, m.index) : text;
+	const nl = text.lastIndexOf('\n');
+	const lastLine = text.slice(nl + 1);
+	return lastLine.startsWith('`') ? text.slice(0, nl + 1) : text;
 }
 
-/**
- * Script injected into every preview document. Reports uncaught errors to the
- * parent frame so the studio can surface them (and offer an AI fix).
- * The iframe runs without allow-same-origin, so postMessage targets '*' —
- * the parent verifies event.source instead.
- */
-const CAPTURE_SCRIPT =
-	'<script>(function(){var seen={};function send(m){m=String(m);if(seen[m])return;seen[m]=1;' +
-	"try{parent.postMessage({__studio:'runtime_error',message:m},'*')}catch(e){}}" +
-	"window.addEventListener('error',function(e){send(e.message+(e.lineno?' (line '+e.lineno+')':''))});" +
-	"window.addEventListener('unhandledrejection',function(e){var r=e.reason;send('Unhandled rejection: '+((r&&r.message)||r))});" +
-	'})()<\/script>';
+const LANG_BY_EXTENSION: Record<string, string> = {
+	svelte: 'svelte',
+	js: 'js',
+	ts: 'ts',
+	json: 'json',
+	css: 'css',
+	html: 'html',
+	md: 'md',
+	svg: 'svg'
+};
 
-/** Prepares user/AI code for the sandboxed iframe by injecting the error reporter. */
-export function buildPreviewDocument(code: string): string {
-	const headMatch = /<head[^>]*>/i.exec(code);
-	if (headMatch) {
-		const insertAt = headMatch.index + headMatch[0].length;
-		return code.slice(0, insertAt) + CAPTURE_SCRIPT + code.slice(insertAt);
-	}
-	return CAPTURE_SCRIPT + code;
+/** Serializes editor files back into the fence format for <current_code> context. */
+export function serializeFiles(files: { name: string; contents: string }[]): string {
+	return files
+		.map((file) => {
+			const ext = file.name.split('.').pop() ?? '';
+			const lang = LANG_BY_EXTENSION[ext] ?? '';
+			return `\`\`\`${lang} file=${file.name}\n${file.contents}\n\`\`\``;
+		})
+		.join('\n\n');
 }

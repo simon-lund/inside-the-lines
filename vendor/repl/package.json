@@ -12,11 +12,6 @@
 	},
 	"homepage": "https://github.com/sveltejs/svelte.dev/tree/main/packages/repl/#readme",
 	"exports": {
-		".": {
-			"types": "./src/lib/public.d.ts",
-			"svelte": "./src/lib/index.ts",
-			"default": "./src/lib/index.ts"
-		},
 		"./bundler": {
 			"types": "./src/lib/Bundler.svelte.ts",
 			"default": "./src/lib/Bundler.svelte.ts"

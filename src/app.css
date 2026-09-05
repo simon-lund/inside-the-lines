@@ -136,6 +136,47 @@ body {
 	padding: 6px;
 }
 
+/* ---------------------------------------------------------------------------
+   Theme bridge for the vendored @sveltejs/repl components (Editor, Viewer):
+   they style themselves via svelte.dev's --sk-* tokens and --shiki-* code
+   colors, so we map those onto our palette.
+--------------------------------------------------------------------------- */
+:root {
+	--sk-bg-1: var(--bg-inset);
+	--sk-bg-2: var(--bg-panel);
+	--sk-bg-3: var(--bg-inset);
+	--sk-bg-4: var(--bg-elevated);
+	--sk-bg-highlight: rgba(255, 255, 255, 0.06);
+	--sk-bg-selection: rgba(138, 180, 248, 0.25);
+	--sk-bg-unfocused-selection: rgba(138, 180, 248, 0.12);
+	--sk-border: var(--border);
+	--sk-border-radius: var(--radius-sm);
+	--sk-fg-1: var(--text);
+	--sk-fg-2: var(--text-muted);
+	--sk-fg-3: var(--text-muted);
+	--sk-fg-4: var(--text-faint);
+	--sk-fg-accent: var(--accent);
+	--sk-font-family-ui: var(--font-sans);
+	--sk-font-family-mono: var(--font-mono);
+	--sk-font-mono: 13px/1.7 var(--font-mono);
+	--sk-font-ui-medium: 500 13px/1.5 var(--font-sans);
+	--sk-font-ui-small: 12px/1.5 var(--font-sans);
+	--sk-pane-controls-height: 42px;
+	--sk-raised-width: 1px;
+	--sk-raised-color: rgba(255, 255, 255, 0.07);
+	--sk-raised-hover-color: rgba(255, 255, 255, 0.14);
+	--sk-raised-active-width: 1px;
+	--sk-raised-active-color: rgba(0, 0, 0, 0.35);
+	--sk-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+	--shiki-color-text: #d7dce2;
+	--shiki-token-comment: #7f8894;
+	--shiki-token-keyword: #c678dd;
+	--shiki-token-string: #98c379;
+	--shiki-token-function: #61afef;
+	--shiki-token-constant: #d19a66;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

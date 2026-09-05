@@ -9,9 +9,13 @@
 	let { studio, message }: { studio: Studio; message: UiMessage } = $props();
 
 	const isThinkingPlaceholder = $derived(
-		message.status === 'streaming' && !message.display && message.code === null
+		message.status === 'streaming' && !message.display && message.fileNames.length === 0
 	);
-	const codeLines = $derived(message.code === null ? 0 : message.code.split('\n').length);
+	const chipLabel = $derived(
+		message.fileNames.length === 1
+			? message.fileNames[0]
+			: `${message.fileNames.length} files`
+	);
 	const phaseLabel = $derived(
 		studio.phase === 'thinking' ? 'Thinking…' : studio.phase === 'writing' ? 'Writing…' : 'Working…'
 	);
@@ -40,7 +44,7 @@
 			{#if message.display}
 				<p class="prose">{message.display}</p>
 			{/if}
-			{#if message.code !== null}
+			{#if message.fileNames.length > 0}
 				<button
 					class="code-chip"
 					class:writing={message.status === 'streaming'}
@@ -52,9 +56,9 @@
 					{:else}
 						<FileCode2 size={15} aria-hidden="true" />
 					{/if}
-					<span class="chip-name">app.html</span>
+					<span class="chip-name">{chipLabel}</span>
 					<span class="chip-meta">
-						{message.status === 'streaming' ? 'writing…' : `${codeLines} lines`}
+						{message.status === 'streaming' ? 'writing…' : 'view code'}
 					</span>
 				</button>
 			{/if}

@@ -3,12 +3,33 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	// The vendored @sveltejs/repl is linked source (vendor/repl) — serve it
+	// unbundled so its `new Worker(new URL(...))` workers resolve correctly.
+	optimizeDeps: {
+		exclude: ['@sveltejs/repl']
+	},
+	server: {
+		fs: {
+			allow: ['vendor/repl']
+		}
+	},
 	plugins: [
 		sveltekit({
+			// Resolve the repl subpaths straight into vendor/ (not through the
+			// node_modules symlink) so TS and Vite agree on one module identity.
+			alias: {
+				'@sveltejs/repl/bundler': 'vendor/repl/src/lib/Bundler.svelte.ts',
+				'@sveltejs/repl/workspace': 'vendor/repl/src/lib/Workspace.svelte.ts',
+				'@sveltejs/repl/editor': 'vendor/repl/src/lib/Editor/Editor.svelte',
+				'@sveltejs/repl/viewer': 'vendor/repl/src/lib/Output/Viewer.svelte'
+			},
 			compilerOptions: {
-				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
-				runes: ({ filename }) =>
-					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+				// Force runes mode for the project, except for libraries (node_modules
+				// and the vendored repl, which contains some legacy-syntax components).
+				runes: ({ filename }) => {
+					const parts = filename.split(/[/\\]/);
+					return parts.includes('node_modules') || parts.includes('vendor') ? undefined : true;
+				}
 			},
 
 			// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.

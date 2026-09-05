@@ -9,10 +9,14 @@
 
 	onMount(() => {
 		void studio.init();
+		if (import.meta.env.DEV) {
+			(window as unknown as { __studio: Studio }).__studio = studio;
+		}
 	});
 
 	function newSession() {
-		const dirty = studio.messages.length > 0 || studio.code.trim().length > 0;
+		const dirty =
+			studio.messages.length > 0 || Object.keys(studio.workspace.modified).length > 0;
 		if (dirty && !confirm('Clear the chat and the current app?')) return;
 		studio.reset();
 	}

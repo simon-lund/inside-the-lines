@@ -6,3 +6,5 @@ Local changes:
 - src/lib/vendored-site-kit/: copied site-kit codemirror + polyfills modules (same repo/commit).
 - Workspace.svelte.ts + workers/*/index.ts: site-kit imports point at the vendored copies.
 - Editor/codemirror.css: fold/close icon url(icons/…) refs inlined as data URIs (icons pkg not vendored).
+- Pruned unused UI needing site-kit/icons: Repl.svelte, index.ts (+ \".\" export), Input/, Output/{Output,AstView,AstNode,CompilerOptions}.svelte, and the package's own src/routes dev app.
+- Added vendored-site-kit/codemirror/index.d.ts (local type declarations).

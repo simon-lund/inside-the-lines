@@ -1,5 +1,8 @@
 {
 	"extends": "./.svelte-kit/tsconfig.json",
+	// vendor/ holds the vendored @sveltejs/repl — only the modules we actually
+	// import from it are type-checked (via the import graph), not its whole tree.
+	"exclude": ["node_modules/**", "vendor/**"],
 	"compilerOptions": {
 		"rewriteRelativeImportExtensions": true,
 		"allowJs": true,

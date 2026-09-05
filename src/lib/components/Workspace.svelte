@@ -5,7 +5,7 @@
 	import Download from '@lucide/svelte/icons/download';
 	import Eye from '@lucide/svelte/icons/eye';
 	import Play from '@lucide/svelte/icons/play';
-	import CodeEditor from './CodeEditor.svelte';
+	import FileEditor from './FileEditor.svelte';
 	import Preview from './Preview.svelte';
 	import type { Studio } from '$lib/studio.svelte';
 
@@ -13,36 +13,40 @@
 
 	let copied = $state(false);
 
-	const hasCode = $derived(studio.code.trim().length > 0);
+	// The toolbar shows the AI's state; bundler progress is the Viewer's banner.
 	const statusLabel = $derived(
-		!studio.streaming
-			? null
-			: studio.phase === 'thinking'
+		studio.streaming
+			? studio.phase === 'thinking'
 				? 'Thinking…'
 				: studio.phase === 'writing'
 					? 'Writing code…'
 					: 'Working…'
+			: null
 	);
 
-	async function copyCode() {
-		await navigator.clipboard.writeText(studio.code);
+	async function copyCurrentFile() {
+		const current = studio.workspace.current;
+		if (!current) return;
+		await navigator.clipboard.writeText(current.contents);
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
 	}
 
-	function downloadCode() {
-		const url = URL.createObjectURL(new Blob([studio.code], { type: 'text/html' }));
+	function downloadCurrentFile() {
+		const current = studio.workspace.current;
+		if (!current) return;
+		const url = URL.createObjectURL(new Blob([current.contents], { type: 'text/plain' }));
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = 'app.html';
+		a.download = current.basename;
 		a.click();
 		URL.revokeObjectURL(url);
 	}
 
 	function onKeydown(event: KeyboardEvent) {
-		if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && hasCode) {
+		if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
 			event.preventDefault();
-			studio.runPreview();
+			void studio.rebundle();
 		}
 	}
 </script>
@@ -84,20 +88,14 @@
 		<div class="actions">
 			<button
 				class="btn btn-icon"
-				onclick={() => studio.runPreview()}
-				disabled={!hasCode || studio.streaming}
-				title="Run (Ctrl+Enter)"
-				aria-label="Run"
+				onclick={() => studio.rebundle()}
+				disabled={studio.streaming}
+				title="Re-run (Ctrl+Enter)"
+				aria-label="Re-run"
 			>
 				<Play size={15} aria-hidden="true" />
 			</button>
-			<button
-				class="btn btn-icon"
-				onclick={copyCode}
-				disabled={!hasCode}
-				title="Copy code"
-				aria-label="Copy code"
-			>
+			<button class="btn btn-icon" onclick={copyCurrentFile} title="Copy current file" aria-label="Copy current file">
 				{#if copied}
 					<Check size={15} color="var(--success)" aria-hidden="true" />
 				{:else}
@@ -106,10 +104,9 @@
 			</button>
 			<button
 				class="btn btn-icon"
-				onclick={downloadCode}
-				disabled={!hasCode}
-				title="Download app.html"
-				aria-label="Download app.html"
+				onclick={downloadCurrentFile}
+				title="Download current file"
+				aria-label="Download current file"
 			>
 				<Download size={15} aria-hidden="true" />
 			</button>
@@ -121,7 +118,7 @@
 		<Preview {studio} />
 	</div>
 	<div class="pane" hidden={studio.activeTab !== 'code'}>
-		<CodeEditor {studio} />
+		<FileEditor {studio} />
 	</div>
 </section>
 
@@ -180,6 +177,9 @@
 		gap: 7px;
 		font-size: 12.5px;
 		color: var(--text-muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.dot {
 		width: 7px;
@@ -187,6 +187,7 @@
 		border-radius: 50%;
 		background: var(--accent);
 		animation: blink 1.2s ease-in-out infinite;
+		flex-shrink: 0;
 	}
 	@keyframes blink {
 		50% {
