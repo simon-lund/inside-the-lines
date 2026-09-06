@@ -18,6 +18,10 @@ multi-file Svelte 5 app** into the REPL on the right — **Code** tab (multi-fil
   switches to Preview. Files the model omits are deleted (it must always emit the full set).
 - Manual edits re-bundle automatically and are sent to the model as `<current_code>` context on
   the next message. Bundle/runtime errors surface as a toast with one-click **Fix with AI**.
+- The studio shell itself is built on **Tailwind v4 + shadcn-svelte** (`vega` preset, zinc base,
+  blue accent, Inter; components in `src/lib/components/ui`). The vendored editor/viewer are
+  themed through a `--sk-*`/`--shiki-*` → shadcn-token bridge at the bottom of `src/app.css`.
+  The Viewer's built-in console pane is disabled (it receives an `onLog` callback).
 
 ### Gotcha discovered the hard way
 
