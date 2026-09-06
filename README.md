@@ -29,6 +29,22 @@ multi-file Svelte 5 app** into the REPL on the right — **Code** tab (multi-fil
 constructor running in a component's script) silently kills the page's entire reactivity after
 first paint. It must be called post-mount — see `Studio.init()`.
 
+## Mercury: views, not apps
+
+The studio's purpose: *"No apps or folders. Mercury fluidly assembles content and actions based
+on your intentions."* Two layers make that concrete:
+
+- **The Mercury design system** (`src/lib/mercury/src`, seeded into every REPL workspace as a
+  protected `mercury/` folder, imported as `'mercury'`): `Canvas`, `Module` (source header,
+  body, action row, "⌘ More actions"), `Action(s)`, `Bubble`/`Divider`/`Reply`, `ListRow`,
+  `Media`, `MapView`, `Avatar`, `Icon` (lucide glyphs; any lucide or phosphor-svelte component can
+  be passed as `icon`). The system prompt teaches the model this vocabulary, so every assembled
+  view speaks one language. The folder is hidden in the editor behind the `mercury/` toggle.
+- **The library** (`./library/*.json`, `/api/library`): save the current view under a name, load
+  it back later (framework files are re-seeded), delete it. Seeded on first run with the four
+  reference modules (Philz Coffee, a Twitter conversation, Four Seasons, Balenciaga sneakers)
+  and a canvas combining them — see `src/lib/mercury/examples`.
+
 ## Setup
 
 ```bash
