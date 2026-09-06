@@ -1,14 +1,21 @@
 <script lang="ts">
 	import Editor from '@sveltejs/repl/editor';
+	import Layers from '@lucide/svelte/icons/layers';
 	import { cn } from '$lib/utils.js';
+	import { isFrameworkFile } from '$lib/mercury/files';
 	import type { Studio } from '$lib/studio.svelte';
 
 	let { studio }: { studio: Studio } = $props();
+
+	// The mercury/ design system is tucked away unless the user asks to see it.
+	const visibleFiles = $derived(
+		studio.workspace.file_nodes.filter((f) => studio.showFramework || !isFrameworkFile(f.name))
+	);
 </script>
 
 <div class="flex h-full min-h-0 flex-col bg-background">
 	<div class="flex shrink-0 gap-0.5 overflow-x-auto border-b bg-card px-2 pt-1.5" role="tablist" aria-label="Files">
-		{#each studio.workspace.file_nodes as file (file.name)}
+		{#each visibleFiles as file (file.name)}
 			{@const active = studio.workspace.current?.name === file.name}
 			<button
 				role="tab"
@@ -25,6 +32,19 @@
 				{/if}
 			</button>
 		{/each}
+		<button
+			type="button"
+			class={cn(
+				'ml-auto inline-flex shrink-0 items-center gap-1.5 self-center rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground',
+				studio.showFramework && 'text-foreground'
+			)}
+			onclick={() => (studio.showFramework = !studio.showFramework)}
+			title="Show the Mercury design-system files"
+			aria-pressed={studio.showFramework}
+		>
+			<Layers class="size-3.5" aria-hidden="true" />
+			mercury/
+		</button>
 	</div>
 
 	<!-- While the AI writes, the editor is display-only. -->

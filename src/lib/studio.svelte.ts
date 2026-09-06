@@ -1,7 +1,8 @@
 import Bundler from '@sveltejs/repl/bundler';
 import { Workspace, type File } from '@sveltejs/repl/workspace';
 import { parseAssistantText, serializeFiles, type ParsedFile } from './artifact';
-import type { ApiChatMessage, ErrorCode } from './types';
+import { FRAMEWORK_ALIASES, isFrameworkFile, makeFile, mercuryFiles } from './mercury/files';
+import type { ApiChatMessage, ErrorCode, LibrarySummary, ViewFile } from './types';
 
 export type AssistantPhase = 'waiting' | 'thinking' | 'writing';
 
@@ -21,26 +22,28 @@ export interface UiMessage {
 }
 
 const STARTER_APP = `<script>
-	let count = $state(0);
+	import { Canvas, Module, Action } from 'mercury';
+	let nudges = $state(0);
 </script>
 
-<main class="min-h-screen grid place-items-center bg-zinc-950 text-zinc-100">
-	<div class="text-center space-y-4">
-		<h1 class="text-2xl font-semibold tracking-tight">Hello, studio</h1>
-		<p class="text-zinc-400 text-sm">Ask the AI for an app — or edit me.</p>
-		<button
-			class="rounded-lg bg-indigo-500 hover:bg-indigo-400 active:scale-95 transition px-4 py-2 text-sm font-medium"
-			onclick={() => count++}
-		>
-			clicked {count} {count === 1 ? 'time' : 'times'}
-		</button>
-	</div>
-</main>
+<Canvas>
+	<Module title="Studio" source="Getting started" kind="generic">
+		<h2 class="m-title">Assemble something.</h2>
+		<p class="m-text">
+			Describe what you're trying to do. Mercury modules gather the content and the actions
+			around that intent — no apps, no folders.
+		</p>
+		<p class="m-meta">{nudges} {nudges === 1 ? 'nudge' : 'nudges'} so far</p>
+
+		{#snippet actions()}
+			<Action primary label="Nudge" onclick={() => nudges++} />
+			<Action label="Open the library" sublabel="Saved views live there" />
+		{/snippet}
+	</Module>
+</Canvas>
 `;
 
-function makeFile(name: string, contents: string): File {
-	return { type: 'file', name, basename: name.split('/').pop() ?? name, contents, text: true };
-}
+const WORKSPACE_OPTIONS = { tailwind: true, aliases: FRAMEWORK_ALIASES };
 
 /** All client-side state of the studio — one instance per page, browser-only (ssr = false). */
 export class Studio {
@@ -55,6 +58,14 @@ export class Studio {
 	/** Runtime error reported by the preview iframe (bound to the Viewer). */
 	previewError = $state<Error | null>(null);
 	svelteVersion = $state<string | null>(null);
+	/** Show the protected mercury/ design-system files in the editor. */
+	showFramework = $state(false);
+
+	/** Saved views; null until the first fetch completes. */
+	library = $state<LibrarySummary[] | null>(null);
+	libraryOpen = $state(false);
+	libraryBusy = $state<'saving' | 'loading' | 'deleting' | null>(null);
+	libraryError = $state<string | null>(null);
 
 	workspace: Workspace;
 	bundler: Bundler;
@@ -68,8 +79,7 @@ export class Studio {
 	private lastApply = 0;
 
 	constructor() {
-		// The bundler must exist first: workspace callbacks (even the tailwind
-		// setter) can trigger a rebundle synchronously during construction.
+		// The bundler must exist first: workspace callbacks can trigger a rebundle synchronously.
 		this.bundler = new Bundler({
 			svelte_version: 'latest',
 			onstatus: (message) => (this.bundlerStatus = message),
@@ -77,7 +87,7 @@ export class Studio {
 			onerror: (message) => (this.previewError = new Error(message))
 		});
 
-		this.workspace = new Workspace([makeFile('App.svelte', STARTER_APP)], {
+		this.workspace = new Workspace([...mercuryFiles(), makeFile('App.svelte', STARTER_APP)], {
 			initial: 'App.svelte',
 			svelte_version: 'latest',
 			onupdate: () => this.#onWorkspaceChange(),
@@ -87,8 +97,13 @@ export class Studio {
 
 	/** Called from onMount — bundle() spins up $effect roots, which must not happen during component init. */
 	async init(): Promise<void> {
-		// The setter fires the workspace's onupdate, which triggers the first bundle.
-		this.workspace.tailwind = true;
+		// reset() applies tailwind + the 'mercury' alias and fires exactly one bundle.
+		void this.workspace.reset(
+			[...mercuryFiles(), makeFile('App.svelte', STARTER_APP)],
+			WORKSPACE_OPTIONS,
+			'App.svelte'
+		);
+		void this.refreshLibrary();
 		try {
 			const res = await fetch('/api/health');
 			const data = (await res.json()) as { hasApiKey: boolean };
@@ -119,10 +134,10 @@ export class Studio {
 		if (this.streaming) this.userPinnedTab = true;
 	}
 
-	/** The current editor files, serialized for context / export. */
-	textFiles(): { name: string; contents: string }[] {
+	/** The user's own files (design-system files excluded), serialized for context / export. */
+	textFiles(): ViewFile[] {
 		return this.workspace.file_nodes
-			.filter((f) => f.text)
+			.filter((f) => f.text && !isFrameworkFile(f.name))
 			.map((f) => ({ name: f.name, contents: f.contents }));
 	}
 
@@ -143,8 +158,96 @@ export class Studio {
 		this.lastAiFiles = {};
 		this.previewError = null;
 		this.activeTab = 'preview';
-		void this.workspace.reset([makeFile('App.svelte', STARTER_APP)], { tailwind: true }, 'App.svelte');
+		void this.workspace.reset(
+			[...mercuryFiles(), makeFile('App.svelte', STARTER_APP)],
+			WORKSPACE_OPTIONS,
+			'App.svelte'
+		);
 	}
+
+	// ---------------------------------------------------------------- library
+
+	async refreshLibrary(): Promise<void> {
+		try {
+			const res = await fetch('/api/library');
+			const data = (await res.json()) as { views: LibrarySummary[] };
+			this.library = data.views;
+			this.libraryError = null;
+		} catch {
+			this.libraryError = 'Could not load the library.';
+			this.library ??= [];
+		}
+	}
+
+	/** Title suggestion for the save form: the first thing the user asked for. */
+	suggestedTitle(): string {
+		return this.messages.find((m) => m.role === 'user')?.display.slice(0, 60) ?? '';
+	}
+
+	async saveView(title: string): Promise<boolean> {
+		const files = this.textFiles();
+		if (!title.trim() || files.length === 0 || this.libraryBusy) return false;
+		this.libraryBusy = 'saving';
+		this.libraryError = null;
+		try {
+			const res = await fetch('/api/library', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ title: title.trim(), prompt: this.suggestedTitle(), files })
+			});
+			if (!res.ok) throw new Error(`save failed (${res.status})`);
+			await this.refreshLibrary();
+			return true;
+		} catch {
+			this.libraryError = 'Saving failed.';
+			return false;
+		} finally {
+			this.libraryBusy = null;
+		}
+	}
+
+	/** Loads a saved view into the workspace as a fresh session (framework files re-seeded). */
+	async loadView(id: string): Promise<void> {
+		if (this.libraryBusy || this.streaming) return;
+		this.libraryBusy = 'loading';
+		this.libraryError = null;
+		try {
+			const res = await fetch(`/api/library/${id}`);
+			if (!res.ok) throw new Error(`load failed (${res.status})`);
+			const { view } = (await res.json()) as { view: { files: ViewFile[] } };
+			this.messages = [];
+			// The model has no history of these files — send them as context on the next message.
+			this.lastAiFiles = {};
+			this.previewError = null;
+			this.activeTab = 'preview';
+			this.libraryOpen = false;
+			await this.workspace.reset(
+				[...mercuryFiles(), ...view.files.map((f) => makeFile(f.name, f.contents))],
+				WORKSPACE_OPTIONS,
+				'App.svelte'
+			);
+		} catch {
+			this.libraryError = 'Loading failed.';
+		} finally {
+			this.libraryBusy = null;
+		}
+	}
+
+	async deleteView(id: string): Promise<void> {
+		if (this.libraryBusy) return;
+		this.libraryBusy = 'deleting';
+		try {
+			const res = await fetch(`/api/library/${id}`, { method: 'DELETE' });
+			if (!res.ok) throw new Error(`delete failed (${res.status})`);
+			await this.refreshLibrary();
+		} catch {
+			this.libraryError = 'Deleting failed.';
+		} finally {
+			this.libraryBusy = null;
+		}
+	}
+
+	// ------------------------------------------------------------------- chat
 
 	/** Re-send the last user prompt after an error (context blocks are rebuilt fresh). */
 	retryLast(): void {
@@ -284,6 +387,8 @@ export class Studio {
 	/** Writes streamed files into the workspace; on the final pass, removes files the AI dropped. */
 	private applyFiles(parsed: ParsedFile[], reconcile: boolean): void {
 		for (const pf of parsed) {
+			// The design system is not the model's to rewrite.
+			if (isFrameworkFile(pf.name)) continue;
 			const existing = this.workspace.file_nodes.find((f) => f.name === pf.name);
 			if (!existing) {
 				this.workspace.add(makeFile(pf.name, pf.contents));
@@ -293,13 +398,14 @@ export class Studio {
 		}
 
 		// Keep the file that is currently being written in view.
-		const open = parsed.find((f) => !f.closed);
+		const open = parsed.find((f) => !f.closed && !isFrameworkFile(f.name));
 		if (open && this.workspace.current?.name !== open.name) {
 			this.workspace.select(open.name);
 		}
 
 		if (reconcile) {
 			for (const file of [...this.workspace.file_nodes]) {
+				if (isFrameworkFile(file.name)) continue;
 				if (!parsed.some((pf) => pf.name === file.name) && this.workspace.file_nodes.length > 1) {
 					this.workspace.remove(file);
 				}
@@ -308,11 +414,11 @@ export class Studio {
 	}
 
 	private finishFiles(live: UiMessage, reconcile: boolean): void {
-		const parsed = parseAssistantText(live.raw);
-		if (parsed.files.length === 0) return;
+		const parsed = parseAssistantText(live.raw).files.filter((f) => !isFrameworkFile(f.name));
+		if (parsed.length === 0) return;
 
-		this.applyFiles(parsed.files, reconcile);
-		this.workspace.select(parsed.files[0].name);
+		this.applyFiles(parsed, reconcile);
+		this.workspace.select(parsed[0].name);
 		this.workspace.mark_saved();
 		this.lastAiFiles = Object.fromEntries(this.textFiles().map((f) => [f.name, f.contents]));
 		void this.rebundle();

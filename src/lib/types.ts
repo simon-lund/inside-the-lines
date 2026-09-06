@@ -30,3 +30,27 @@ export type StreamEvent =
 	| { type: 'text'; text: string }
 	| { type: 'done'; stopReason: string | null }
 	| { type: 'error'; code: ErrorCode; detail: string };
+
+/** One file of a saved/loaded view (design-system files are never included). */
+export interface ViewFile {
+	name: string;
+	contents: string;
+}
+
+/** A saved view as stored on the server. */
+export interface LibraryView {
+	id: string;
+	title: string;
+	prompt: string;
+	createdAt: string;
+	files: ViewFile[];
+}
+
+/** Library listing entry (no file contents). */
+export interface LibrarySummary {
+	id: string;
+	title: string;
+	prompt: string;
+	createdAt: string;
+	fileCount: number;
+}

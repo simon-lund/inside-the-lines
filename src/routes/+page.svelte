@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import BookMarked from '@lucide/svelte/icons/book-marked';
 	import SquarePen from '@lucide/svelte/icons/square-pen';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import Chat from '$lib/components/Chat.svelte';
+	import LibrarySheet from '$lib/components/LibrarySheet.svelte';
 	import Workspace from '$lib/components/Workspace.svelte';
 	import { Studio } from '$lib/studio.svelte';
 
@@ -38,6 +40,10 @@
 			<h1 class="text-[15px] font-medium tracking-tight">AI Studio</h1>
 		</div>
 		<Badge variant="outline" title="Model used for generation">Claude Opus 5</Badge>
+		<Button variant="ghost" size="sm" onclick={() => (studio.libraryOpen = true)}>
+			<BookMarked aria-hidden="true" />
+			Library
+		</Button>
 		<Button variant="outline" size="sm" onclick={newSession}>
 			<SquarePen aria-hidden="true" />
 			New session
@@ -51,3 +57,5 @@
 		<Workspace {studio} />
 	</main>
 </div>
+
+<LibrarySheet {studio} />

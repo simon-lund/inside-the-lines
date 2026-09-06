@@ -14,6 +14,9 @@ export default defineConfig({
 			// Resolve the repl subpaths straight into vendor/ (not through the
 			// node_modules symlink) so TS and Vite agree on one module identity.
 			alias: {
+				// Host-side mirror of the REPL's 'mercury' alias so the design-system
+				// sources and examples type-check as real Svelte files.
+				mercury: 'src/lib/mercury/src',
 				'@sveltejs/repl/bundler': 'vendor/repl/src/lib/Bundler.svelte.ts',
 				'@sveltejs/repl/workspace': 'vendor/repl/src/lib/Workspace.svelte.ts',
 				'@sveltejs/repl/editor': 'vendor/repl/src/lib/Editor/Editor.svelte',

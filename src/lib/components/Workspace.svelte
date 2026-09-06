@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Bookmark from '@lucide/svelte/icons/bookmark';
 	import Check from '@lucide/svelte/icons/check';
 	import CodeXml from '@lucide/svelte/icons/code-xml';
 	import Copy from '@lucide/svelte/icons/copy';
@@ -81,6 +82,15 @@
 		{/if}
 
 		<div class="ml-auto flex gap-0.5">
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				onclick={() => (studio.libraryOpen = true)}
+				title="Save to library"
+				aria-label="Save to library"
+			>
+				<Bookmark aria-hidden="true" />
+			</Button>
 			<Button
 				variant="ghost"
 				size="icon-sm"
