@@ -16,11 +16,12 @@
 	let textareaEl = $state<HTMLTextAreaElement | null>(null);
 	let stickToBottom = true;
 
+	// Intents, not apps — the Mercury framing.
 	const SUGGESTIONS = [
-		'A pomodoro timer with a satisfying tick',
-		'A markdown notepad with live preview',
-		"Conway's Game of Life",
-		'A color palette generator'
+		'Coffee with Danny at Philz tomorrow at 3',
+		'Plan a weekend in Lisbon in October',
+		'Find a birthday gift for my sister who runs',
+		'Catch up on the Four Seasons single by Taeyeon'
 	];
 
 	const canSend = $derived(input.trim().length > 0 && !studio.streaming && studio.hasApiKey === true);
@@ -72,9 +73,9 @@
 			<!-- empty conversation: welcome + starting points -->
 			<div class="m-auto flex flex-col items-center gap-1.5 px-2 py-6 text-center">
 				<Sparkles class="mb-1.5 size-9 text-(--accent-text) opacity-50" strokeWidth={1.5} aria-hidden="true" />
-				<p class="text-[15px] font-medium">Build something.</p>
+				<p class="text-[15px] font-medium">What are you trying to do?</p>
 				<p class="mb-3 max-w-[260px] text-[13px] text-muted-foreground">
-					Describe a mini app and Claude writes it straight into the editor — then iterate together.
+					Say the intent. Mercury assembles the content and actions around it — then iterate together.
 				</p>
 				<div class="flex w-full max-w-[280px] flex-col gap-2">
 					{#each SUGGESTIONS as suggestion (suggestion)}
@@ -120,7 +121,7 @@
 			oninput={autosize}
 			rows={1}
 			class="max-h-40 min-h-0 resize-none rounded-xl"
-			placeholder={studio.hasApiKey === false ? 'Waiting for an API key…' : 'Describe what to build or change…'}
+			placeholder={studio.hasApiKey === false ? 'Waiting for an API key…' : 'What are you trying to do?'}
 			disabled={studio.hasApiKey !== true}
 			aria-label="Message"
 		/>
