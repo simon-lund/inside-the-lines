@@ -5,6 +5,8 @@
 	import Download from '@lucide/svelte/icons/download';
 	import Eye from '@lucide/svelte/icons/eye';
 	import Play from '@lucide/svelte/icons/play';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import FileEditor from './FileEditor.svelte';
 	import Preview from './Preview.svelte';
 	import type { Studio } from '$lib/studio.svelte';
@@ -53,159 +55,66 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<section class="workspace">
-	<div class="toolbar">
-		<div class="tabs" role="tablist" aria-label="Workspace view">
-			<button
-				role="tab"
-				aria-selected={studio.activeTab === 'preview'}
-				class="tab"
-				class:active={studio.activeTab === 'preview'}
-				onclick={() => studio.pinTab('preview')}
-			>
-				<Eye size={14} aria-hidden="true" />
-				Preview
-			</button>
-			<button
-				role="tab"
-				aria-selected={studio.activeTab === 'code'}
-				class="tab"
-				class:active={studio.activeTab === 'code'}
-				onclick={() => studio.pinTab('code')}
-			>
-				<CodeXml size={14} aria-hidden="true" />
-				Code
-			</button>
-		</div>
+<section class="flex min-h-0 min-w-0 flex-col">
+	<div class="flex items-center gap-3 border-b bg-card px-3 py-2">
+		<Tabs.Root
+			value={studio.activeTab}
+			onValueChange={(value) => studio.pinTab(value as 'preview' | 'code')}
+		>
+			<Tabs.List>
+				<Tabs.Trigger value="preview">
+					<Eye aria-hidden="true" />
+					Preview
+				</Tabs.Trigger>
+				<Tabs.Trigger value="code">
+					<CodeXml aria-hidden="true" />
+					Code
+				</Tabs.Trigger>
+			</Tabs.List>
+		</Tabs.Root>
 
 		{#if statusLabel}
-			<span class="status">
-				<span class="dot" aria-hidden="true"></span>
+			<span class="flex items-center gap-2 text-xs text-muted-foreground">
+				<span class="size-1.5 animate-pulse rounded-full bg-(--accent-text)" aria-hidden="true"></span>
 				{statusLabel}
 			</span>
 		{/if}
 
-		<div class="actions">
-			<button
-				class="btn btn-icon"
+		<div class="ml-auto flex gap-0.5">
+			<Button
+				variant="ghost"
+				size="icon-sm"
 				onclick={() => studio.rebundle()}
 				disabled={studio.streaming}
 				title="Re-run (Ctrl+Enter)"
 				aria-label="Re-run"
 			>
-				<Play size={15} aria-hidden="true" />
-			</button>
-			<button class="btn btn-icon" onclick={copyCurrentFile} title="Copy current file" aria-label="Copy current file">
+				<Play aria-hidden="true" />
+			</Button>
+			<Button variant="ghost" size="icon-sm" onclick={copyCurrentFile} title="Copy current file" aria-label="Copy current file">
 				{#if copied}
-					<Check size={15} color="var(--success)" aria-hidden="true" />
+					<Check class="text-emerald-400" aria-hidden="true" />
 				{:else}
-					<Copy size={15} aria-hidden="true" />
+					<Copy aria-hidden="true" />
 				{/if}
-			</button>
-			<button
-				class="btn btn-icon"
+			</Button>
+			<Button
+				variant="ghost"
+				size="icon-sm"
 				onclick={downloadCurrentFile}
 				title="Download current file"
 				aria-label="Download current file"
 			>
-				<Download size={15} aria-hidden="true" />
-			</button>
+				<Download aria-hidden="true" />
+			</Button>
 		</div>
 	</div>
 
 	<!-- Both panes stay mounted: the editor keeps its state, the app keeps running. -->
-	<div class="pane" hidden={studio.activeTab !== 'preview'}>
+	<div class="min-h-0 flex-1" hidden={studio.activeTab !== 'preview'}>
 		<Preview {studio} />
 	</div>
-	<div class="pane" hidden={studio.activeTab !== 'code'}>
+	<div class="min-h-0 flex-1" hidden={studio.activeTab !== 'code'}>
 		<FileEditor {studio} />
 	</div>
 </section>
-
-<style>
-	.workspace {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
-		min-height: 0;
-	}
-
-	.toolbar {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 8px 12px;
-		border-bottom: 1px solid var(--border);
-		background: var(--bg-panel);
-	}
-
-	.tabs {
-		display: flex;
-		gap: 2px;
-		background: var(--bg-inset);
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		padding: 2px;
-	}
-	.tab {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		border: none;
-		border-radius: 5px;
-		background: none;
-		color: var(--text-muted);
-		font: inherit;
-		font-size: 13px;
-		padding: 4px 12px;
-		cursor: pointer;
-		transition:
-			background-color 150ms ease,
-			color 150ms ease;
-	}
-	.tab:hover {
-		color: var(--text);
-	}
-	.tab.active {
-		background: var(--bg-elevated);
-		color: var(--text);
-	}
-
-	.status {
-		display: inline-flex;
-		align-items: center;
-		gap: 7px;
-		font-size: 12.5px;
-		color: var(--text-muted);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	.dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: var(--accent);
-		animation: blink 1.2s ease-in-out infinite;
-		flex-shrink: 0;
-	}
-	@keyframes blink {
-		50% {
-			opacity: 0.25;
-		}
-	}
-
-	.actions {
-		margin-left: auto;
-		display: flex;
-		gap: 2px;
-	}
-
-	.pane {
-		flex: 1;
-		min-height: 0;
-	}
-	.pane[hidden] {
-		display: none;
-	}
-</style>

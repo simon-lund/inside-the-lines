@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
@@ -5,15 +6,10 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	// The vendored @sveltejs/repl is linked source (vendor/repl) — serve it
 	// unbundled so its `new Worker(new URL(...))` workers resolve correctly.
-	optimizeDeps: {
-		exclude: ['@sveltejs/repl']
-	},
-	server: {
-		fs: {
-			allow: ['vendor/repl']
-		}
-	},
+	optimizeDeps: { exclude: ['@sveltejs/repl'] },
+	server: { fs: { allow: ['vendor/repl'] } },
 	plugins: [
+		tailwindcss(),
 		sveltekit({
 			// Resolve the repl subpaths straight into vendor/ (not through the
 			// node_modules symlink) so TS and Vite agree on one module identity.
@@ -28,6 +24,7 @@ export default defineConfig({
 				// and the vendored repl, which contains some legacy-syntax components).
 				runes: ({ filename }) => {
 					const parts = filename.split(/[/\\]/);
+
 					return parts.includes('node_modules') || parts.includes('vendor') ? undefined : true;
 				}
 			},

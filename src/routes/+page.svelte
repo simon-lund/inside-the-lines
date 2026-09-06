@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import SquarePen from '@lucide/svelte/icons/square-pen';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import Chat from '$lib/components/Chat.svelte';
 	import Workspace from '$lib/components/Workspace.svelte';
 	import { Studio } from '$lib/studio.svelte';
@@ -26,86 +28,26 @@
 	<title>AI Studio</title>
 </svelte:head>
 
-<div class="app">
-	<header>
-		<div class="brand">
-			<span class="logo" aria-hidden="true"></span>
-			<h1>AI Studio</h1>
+<div class="flex h-screen flex-col">
+	<header class="flex items-center gap-3 border-b bg-card px-4 py-2">
+		<div class="mr-auto flex items-center gap-2.5">
+			<span
+				class="size-3.5 rounded-full bg-(--accent-text) shadow-[0_0_10px_var(--accent-text)]"
+				aria-hidden="true"
+			></span>
+			<h1 class="text-[15px] font-medium tracking-tight">AI Studio</h1>
 		</div>
-		<span class="model" title="Model used for generation">Claude Opus 5</span>
-		<button class="btn btn-outline" onclick={newSession}>
-			<SquarePen size={14} aria-hidden="true" />
+		<Badge variant="outline" title="Model used for generation">Claude Opus 5</Badge>
+		<Button variant="outline" size="sm" onclick={newSession}>
+			<SquarePen aria-hidden="true" />
 			New session
-		</button>
+		</Button>
 	</header>
 
-	<main>
+	<main
+		class="grid min-h-0 flex-1 grid-cols-[minmax(320px,400px)_1fr] max-md:grid-cols-1 max-md:grid-rows-[1fr_minmax(240px,40%)]"
+	>
 		<Chat {studio} />
 		<Workspace {studio} />
 	</main>
 </div>
-
-<style>
-	.app {
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-	}
-
-	header {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 10px 16px;
-		border-bottom: 1px solid var(--border);
-		background: var(--bg-panel);
-	}
-
-	.brand {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin-right: auto;
-	}
-	.logo {
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: radial-gradient(circle at 30% 30%, var(--accent-strong), var(--accent) 60%, #5f8de0);
-		box-shadow: 0 0 10px rgba(138, 180, 248, 0.45);
-	}
-	h1 {
-		margin: 0;
-		font-size: 15px;
-		font-weight: 500;
-		letter-spacing: 0.01em;
-	}
-
-	.model {
-		font-size: 12px;
-		color: var(--text-muted);
-		border: 1px solid var(--border);
-		border-radius: 99px;
-		padding: 3px 10px;
-	}
-
-	main {
-		flex: 1;
-		min-height: 0;
-		display: grid;
-		grid-template-columns: minmax(320px, 400px) 1fr;
-	}
-
-	/* Small screens: stack the workspace above the chat. */
-	@media (max-width: 860px) {
-		main {
-			grid-template-columns: 1fr;
-			grid-template-rows: 1fr minmax(240px, 40%);
-		}
-		main > :global(*:first-child) {
-			order: 2;
-			border-right: none;
-			border-top: 1px solid var(--border);
-		}
-	}
-</style>
