@@ -3,13 +3,13 @@
 
 	let messages = $state([
 		{
-			text: 'Let me get back to you on that. My schedule is kinda crazy right now with Mercury.',
+			text: 'Let me get back to you on that. My schedule is kinda crazy right now with the launch.',
 			time: 'Mon 11:25 PM',
 			outgoing: true
 		},
 		{ divider: 'New messages' },
 		{ text: 'Haha. Oh man' },
-		{ text: "I'm excited to see this beast", avatar: 'DT', time: 'Mon 11:50 PM' }
+		{ text: "I'm excited to see this beast", avatar: 'ML', time: 'Mon 11:50 PM' }
 	]);
 
 	/** @param {string} text */
@@ -18,7 +18,7 @@
 	}
 </script>
 
-<Module title="Danny Trinh @dtrinh" source="Twitter Conversation" kind="twitter">
+<Module title="Mara Lindqvist @maralind" source="Conversation" kind="social">
 	{#each messages as message, i (i)}
 		{#if message.divider}
 			<Divider label={message.divider} />

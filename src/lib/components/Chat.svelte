@@ -18,10 +18,10 @@
 
 	// Intents, not apps — the Mercury framing.
 	const SUGGESTIONS = [
-		'Coffee with Danny at Philz tomorrow at 3',
+		'Coffee with Mara at Kettle & Kite tomorrow at 3',
 		'Plan a weekend in Lisbon in October',
 		'Find a birthday gift for my sister who runs',
-		'Catch up on the Four Seasons single by Taeyeon'
+		'Catch up on the new Juno Vale single'
 	];
 
 	const canSend = $derived(input.trim().length > 0 && !studio.streaming && studio.hasApiKey === true);
@@ -105,8 +105,9 @@
 				<KeyRound aria-hidden="true" />
 				<Alert.Title>API key needed</Alert.Title>
 				<Alert.Description>
-					Add <code class="rounded bg-muted px-1 font-mono text-[11.5px]">ANTHROPIC_API_KEY=sk-ant-…</code>
-					to <code class="rounded bg-muted px-1 font-mono text-[11.5px]">.env</code> in the project root,
+					Add <code class="rounded bg-muted px-1 font-mono text-[11.5px]">{studio.health?.keyVar ?? 'ANTHROPIC_API_KEY'}=…</code>
+					to <code class="rounded bg-muted px-1 font-mono text-[11.5px]">.env</code> in the project root
+					(OpenAI and Mistral work too, see <code class="rounded bg-muted px-1 font-mono text-[11.5px]">.env.example</code>),
 					then restart the dev server.
 				</Alert.Description>
 			</Alert.Root>

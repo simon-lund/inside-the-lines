@@ -1,6 +1,7 @@
 import type { File } from '@sveltejs/repl/workspace';
 import action from './src/Action.svelte?raw';
 import actions from './src/Actions.svelte?raw';
+import art from './src/Art.svelte?raw';
 import avatar from './src/Avatar.svelte?raw';
 import bubble from './src/Bubble.svelte?raw';
 import canvas from './src/Canvas.svelte?raw';
@@ -38,7 +39,8 @@ const SOURCES: Record<string, string> = {
 	'ListRow.svelte': listRow,
 	'Media.svelte': media,
 	'MapView.svelte': mapView,
-	'Icon.svelte': icon
+	'Icon.svelte': icon,
+	'Art.svelte': art
 };
 
 /** Fresh File objects each call — the workspace mutates the ones it holds. */

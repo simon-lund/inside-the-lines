@@ -1,8 +1,9 @@
 import Bundler from '@sveltejs/repl/bundler';
 import { Workspace, type File } from '@sveltejs/repl/workspace';
 import { parseAssistantText, serializeFiles, type ParsedFile } from './artifact';
+import { checkDesign, designReport, type DesignViolation } from './design-check';
 import { FRAMEWORK_ALIASES, isFrameworkFile, makeFile, mercuryFiles } from './mercury/files';
-import type { ApiChatMessage, ErrorCode, LibrarySummary, ViewFile } from './types';
+import type { ApiChatMessage, ErrorCode, HealthInfo, LibrarySummary, ViewFile } from './types';
 
 export type AssistantPhase = 'waiting' | 'thinking' | 'writing';
 
@@ -19,6 +20,8 @@ export interface UiMessage {
 	errorCode?: ErrorCode;
 	errorDetail?: string;
 	stopReason?: string | null;
+	/** Assistant only: design-check violations in the files this message produced. */
+	designIssues?: DesignViolation[];
 }
 
 const STARTER_APP = `<script>
@@ -51,6 +54,8 @@ export class Studio {
 	streaming = $state(false);
 	phase = $state<AssistantPhase>('waiting');
 	activeTab = $state<'preview' | 'code'>('preview');
+	/** Provider + models the server uses; null until /api/health answers. */
+	health = $state<HealthInfo | null>(null);
 	/** null = health check pending. */
 	hasApiKey = $state<boolean | null>(null);
 	/** Bundler progress message ("downloading svelte", "bundling", …). */
@@ -106,8 +111,8 @@ export class Studio {
 		void this.refreshLibrary();
 		try {
 			const res = await fetch('/api/health');
-			const data = (await res.json()) as { hasApiKey: boolean };
-			this.hasApiKey = data.hasApiKey;
+			this.health = (await res.json()) as HealthInfo;
+			this.hasApiKey = this.health.hasApiKey;
 		} catch {
 			this.hasApiKey = false;
 		}
@@ -258,7 +263,10 @@ export class Studio {
 		void this.send(lastUser.display);
 	}
 
-	async send(prompt: string, opts: { errorReport?: string } = {}): Promise<void> {
+	async send(
+		prompt: string,
+		opts: { errorReport?: string; designReport?: string; isRepair?: boolean } = {}
+	): Promise<void> {
 		const trimmed = prompt.trim();
 		if (!trimmed || this.streaming || this.hasApiKey === false) return;
 
@@ -269,6 +277,9 @@ export class Studio {
 		}
 		if (opts.errorReport) {
 			raw += `\n\n<runtime_error>\n${opts.errorReport}\n</runtime_error>`;
+		}
+		if (opts.designReport) {
+			raw += `\n\n<design_violations>\n${opts.designReport}\n</design_violations>`;
 		}
 
 		this.messages.push({
@@ -349,6 +360,22 @@ export class Studio {
 			this.streaming = false;
 			this.abortController = null;
 		}
+
+		// Guardrail: one automatic repair round per user turn; anything left stays visible on the message.
+		if (live.status === 'done' && live.designIssues?.length && !opts.isRepair) {
+			void this.fixDesign(live);
+		}
+	}
+
+	/** Sends a message's design violations back to the model. */
+	fixDesign(message: UiMessage): Promise<void> {
+		const issues = message.designIssues ?? [];
+		if (issues.length === 0) return Promise.resolve();
+		const n = issues.length;
+		return this.send(`Design check: fix ${n} ${n === 1 ? 'issue' : 'issues'}`, {
+			designReport: designReport(issues),
+			isRepair: true
+		});
 	}
 
 	private handleEvent(live: UiMessage, event: { type: string; [key: string]: unknown }): void {
@@ -421,6 +448,7 @@ export class Studio {
 		this.workspace.select(parsed[0].name);
 		this.workspace.mark_saved();
 		this.lastAiFiles = Object.fromEntries(this.textFiles().map((f) => [f.name, f.contents]));
+		if (reconcile) live.designIssues = checkDesign(this.textFiles());
 		void this.rebundle();
 		if (!this.userPinnedTab) this.activeTab = 'preview';
 	}

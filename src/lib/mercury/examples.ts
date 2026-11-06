@@ -1,7 +1,7 @@
 import item from './examples/Item.svelte?raw';
 import music from './examples/Music.svelte?raw';
-import philz from './examples/Philz.svelte?raw';
-import twitter from './examples/Twitter.svelte?raw';
+import conversation from './examples/Conversation.svelte?raw';
+import place from './examples/Place.svelte?raw';
 
 import type { ViewFile } from '$lib/types';
 export type { ViewFile };
@@ -14,10 +14,10 @@ export interface SeedView {
 }
 
 const MODULES: Record<string, { component: string; source: string }> = {
-	Philz: { component: philz, source: 'Philz Coffee — a place, with directions and details' },
-	Twitter: { component: twitter, source: 'a Twitter conversation with Danny Trinh' },
-	Music: { component: music, source: 'Four Seasons by Taeyeon on Spotify' },
-	Item: { component: item, source: 'Balenciaga Speed sneakers from SSENSE' }
+	Place: { component: place, source: 'Kettle & Kite — a café, with directions and details' },
+	Conversation: { component: conversation, source: 'a conversation with Mara Lindqvist' },
+	Music: { component: music, source: 'Low Tide, a single by Juno Vale' },
+	Item: { component: item, source: 'the Black Knit Runner sneaker from Atelier Nord' }
 };
 
 function singleApp(name: string): string {
@@ -46,33 +46,33 @@ function single(id: string, name: string, title: string): SeedView {
 
 const canvasApp = `<script>
 	import { Canvas } from 'mercury';
-	import Philz from './lib/Philz.svelte';
-	import Twitter from './lib/Twitter.svelte';
+	import Place from './lib/Place.svelte';
+	import Conversation from './lib/Conversation.svelte';
 	import Music from './lib/Music.svelte';
 	import Item from './lib/Item.svelte';
 </script>
 
 <Canvas>
-	<Philz />
-	<Twitter />
+	<Place />
+	<Conversation />
 	<Music />
 	<Item />
 </Canvas>
 `;
 
-/** The Mercury reference examples, seeded into the library on first run. */
+/** Reference modules (after Mercury OS's originals, with made-up content), seeded into the library on first run. */
 export const SEED_VIEWS: SeedView[] = [
 	{
-		id: 'mercury-canvas',
-		title: 'Mercury canvas — all four modules',
+		id: 'module-canvas',
+		title: 'Canvas — all four modules',
 		prompt: 'Assemble a canvas with a place, a conversation, a song and a product',
 		files: [
 			{ name: 'App.svelte', contents: canvasApp },
 			...Object.entries(MODULES).map(([name, m]) => ({ name: `lib/${name}.svelte`, contents: m.component }))
 		]
 	},
-	single('philz-coffee', 'Philz', 'Philz Coffee — Location'),
-	single('twitter-conversation', 'Twitter', 'Danny Trinh — Twitter Conversation'),
-	single('four-seasons', 'Music', 'Four Seasons — Music from Spotify'),
-	single('balenciaga-sneakers', 'Item', 'Black Bonded Speed Sneakers — Item from SSENSE')
+	single('kettle-and-kite', 'Place', 'Kettle & Kite — Location'),
+	single('mara-conversation', 'Conversation', 'Mara Lindqvist — Conversation'),
+	single('low-tide', 'Music', 'Low Tide — Music'),
+	single('black-knit-runner', 'Item', 'Black Knit Runner — Item from Northline')
 ];

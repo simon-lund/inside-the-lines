@@ -1,0 +1,87 @@
+{
+	"request": {
+		"mode": "module",
+		"intent": "Gift checkout for Brightside Pulse Headlamp, $42, with gift note",
+		"space": "Gift for Runner Sister",
+		"from": "Brightside Pulse Headlamp → Buy as a gift"
+	},
+	"assembly": {
+		"title": null,
+		"flows": [
+			[
+				{
+					"id": "04e85c30-0",
+					"title": "Gift Checkout",
+					"source": "Lumen & Lace",
+					"kind": "shop",
+					"blocks": [
+						{
+							"type": "kicker",
+							"text": "Lumen & Lace"
+						},
+						{
+							"type": "title",
+							"text": "Brightside Pulse Headlamp, gift order"
+						},
+						{
+							"type": "list",
+							"numbered": false,
+							"rows": [
+								{
+									"label": "Brightside Pulse Headlamp",
+									"sub": "300 lumens · USB-C cable included",
+									"trailing": "$42"
+								},
+								{
+									"label": "Gift wrap",
+									"sub": "Recycled kraft box with ribbon",
+									"trailing": "Free"
+								},
+								{
+									"label": "Standard shipping",
+									"sub": "Arrives in 3–4 days",
+									"trailing": "Free"
+								}
+							]
+						},
+						{
+							"type": "text",
+							"text": "Gift note: \"Happy birthday, Dana. May your winter mornings stay bright. Love, your sister.\""
+						},
+						{
+							"type": "meta",
+							"text": "Gift receipt included, price hidden\nFree exchanges within 30 days\nShips to Dana's address"
+						},
+						{
+							"type": "price",
+							"text": "$42"
+						}
+					],
+					"actions": [
+						{
+							"label": "Place gift order",
+							"effect": "confirm",
+							"sublabel": "Pays with card ending 4417",
+							"icon": "card",
+							"primary": true,
+							"done": "Gift order placed"
+						},
+						{
+							"label": "Edit gift note",
+							"effect": "open",
+							"icon": "message",
+							"intent": "Edit the gift note for the Brightside Pulse Headlamp order, currently 'Happy birthday, Dana. May your winter mornings stay bright. Love, your sister.'"
+						},
+						{
+							"label": "Change delivery address",
+							"effect": "open",
+							"icon": "location",
+							"intent": "Delivery address options for Dana's gift from Lumen & Lace"
+						}
+					],
+					"icon": "gift"
+				}
+			]
+		]
+	}
+}

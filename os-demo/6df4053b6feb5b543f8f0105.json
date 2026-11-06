@@ -1,0 +1,204 @@
+{
+	"request": {
+		"mode": "space",
+		"intent": "Plan a weekend in Lisbon",
+		"space": "Plan a weekend in Lisbon",
+		"from": null
+	},
+	"assembly": {
+		"title": "Lisbon Weekend",
+		"flows": [
+			[
+				{
+					"id": "4052b905-0",
+					"title": "Flights to Lisbon",
+					"source": "Trips",
+					"kind": "generic",
+					"blocks": [
+						{
+							"type": "kicker",
+							"text": "Fri, Nov 13 – Sun, Nov 15"
+						},
+						{
+							"type": "title",
+							"text": "Outbound 7:05 AM, return 8:40 PM"
+						},
+						{
+							"type": "text",
+							"text": "Nonstop with Atlântica Air, both directions. Carry-on included."
+						},
+						{
+							"type": "list",
+							"numbered": false,
+							"rows": [
+								{
+									"label": "Fri 7:05 AM → 10:20 AM",
+									"sub": "Outbound · Nonstop · 3h 15m",
+									"trailing": "$286"
+								},
+								{
+									"label": "Sun 8:40 PM → 11:55 PM",
+									"sub": "Return · Nonstop · 3h 15m",
+									"trailing": "$312"
+								}
+							]
+						},
+						{
+							"type": "meta",
+							"text": "Round trip total\nTaxes and fees included"
+						},
+						{
+							"type": "price",
+							"text": "$598"
+						}
+					],
+					"actions": [
+						{
+							"label": "Choose seats",
+							"effect": "open",
+							"sublabel": "Window or aisle",
+							"icon": "plane",
+							"primary": true,
+							"intent": "Seat picker for Atlântica Air flights to Lisbon, Fri Nov 13 outbound 7:05 AM and Sun Nov 15 return 8:40 PM, round trip $598"
+						},
+						{
+							"label": "Add to calendar",
+							"effect": "confirm",
+							"icon": "calendar",
+							"done": "Added to calendar"
+						},
+						{
+							"label": "Find a hotel",
+							"effect": "open",
+							"icon": "bed",
+							"intent": "Hotels in Lisbon for Nov 13 to 15, two nights, near Alfama, with Casa Miradouro highlighted"
+						}
+					],
+					"icon": "plane"
+				},
+				{
+					"id": "4052b905-1",
+					"title": "Casa Miradouro",
+					"source": "Stays",
+					"kind": "location",
+					"blocks": [
+						{
+							"type": "map",
+							"label": "Casa Miradouro",
+							"sublabel": "Rua das Escolas Gerais 41, Alfama"
+						},
+						{
+							"type": "kicker",
+							"text": "Boutique guesthouse"
+						},
+						{
+							"type": "title",
+							"text": "Casa Miradouro"
+						},
+						{
+							"type": "text",
+							"text": "Twelve rooms in a restored townhouse, with a rooftop terrace overlooking the river. Breakfast included."
+						},
+						{
+							"type": "meta",
+							"text": "Check-in Fri, Nov 13 · 3:00 PM\nCheck-out Sun, Nov 15 · 11:00 AM\n2 nights · Double room"
+						},
+						{
+							"type": "price",
+							"text": "$342"
+						}
+					],
+					"actions": [
+						{
+							"label": "Book this room",
+							"effect": "confirm",
+							"sublabel": "Free cancellation until Nov 11",
+							"icon": "bed",
+							"primary": true,
+							"done": "Room booked"
+						},
+						{
+							"label": "Get directions",
+							"effect": "open",
+							"sublabel": "From airport · 22 min by car",
+							"icon": "navigate",
+							"intent": "Directions from Lisbon airport to Casa Miradouro, Rua das Escolas Gerais 41, arriving around 3:00 PM on Friday"
+						}
+					],
+					"icon": "bed"
+				}
+			],
+			[
+				{
+					"id": "4052b905-2",
+					"title": "Saturday in Alfama",
+					"source": "Itinerary",
+					"kind": "generic",
+					"blocks": [
+						{
+							"type": "kicker",
+							"text": "Sat, Nov 14"
+						},
+						{
+							"type": "title",
+							"text": "A slow day on foot"
+						},
+						{
+							"type": "list",
+							"numbered": true,
+							"rows": [
+								{
+									"label": "Pastelaria Dona Luz",
+									"sub": "Rua da Madalena 128",
+									"trailing": "9:30 AM"
+								},
+								{
+									"label": "São Jorge viewpoint walk",
+									"sub": "Rua do Recolhimento 12",
+									"trailing": "11:00 AM"
+								},
+								{
+									"label": "Lunch at Taberna do Cais",
+									"sub": "Largo do Cais 7",
+									"trailing": "1:30 PM"
+								},
+								{
+									"label": "Fado at Casa da Saudade",
+									"sub": "Beco do Fumo 19",
+									"trailing": "9:00 PM"
+								}
+							]
+						},
+						{
+							"type": "meta",
+							"text": "About 6 km of walking, some hills"
+						}
+					],
+					"actions": [
+						{
+							"label": "Reserve fado dinner",
+							"effect": "open",
+							"sublabel": "Table for 2 · 9:00 PM",
+							"icon": "ticket",
+							"primary": true,
+							"intent": "Reservation for two at Casa da Saudade fado house, Saturday Nov 14 at 9:00 PM, with menu and seating options"
+						},
+						{
+							"label": "Save itinerary",
+							"effect": "confirm",
+							"icon": "save",
+							"done": "Itinerary saved"
+						},
+						{
+							"label": "Share with a friend",
+							"effect": "open",
+							"icon": "share",
+							"intent": "Message to a travel companion sharing the Saturday Alfama itinerary"
+						}
+					],
+					"icon": "sun"
+				}
+			]
+		]
+	}
+}

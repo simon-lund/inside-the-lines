@@ -1,0 +1,94 @@
+{
+	"request": {
+		"mode": "module",
+		"intent": "Directions from Lisbon airport to Casa Miradouro, Rua das Escolas Gerais 41, arriving around 3:00 PM on Friday",
+		"space": "Lisbon Weekend",
+		"from": "Casa Miradouro → Get directions"
+	},
+	"assembly": {
+		"title": null,
+		"flows": [
+			[
+				{
+					"id": "60529df2-0",
+					"title": "Airport to Casa Miradouro",
+					"source": "Location",
+					"kind": "location",
+					"blocks": [
+						{
+							"type": "map",
+							"label": "Lisbon Airport → Casa Miradouro",
+							"sublabel": "Rua das Escolas Gerais 41, Alfama"
+						},
+						{
+							"type": "kicker",
+							"text": "Fri, Nov 13 · Arrive around 3:00 PM"
+						},
+						{
+							"type": "title",
+							"text": "25 min by car, 8 km"
+						},
+						{
+							"type": "text",
+							"text": "Light traffic expected mid-afternoon. The last stretch into Alfama is a short uphill walk."
+						},
+						{
+							"type": "list",
+							"numbered": true,
+							"rows": [
+								{
+									"label": "Leave Terminal 1 arrivals",
+									"sub": "Ride pickup, Bay C",
+									"trailing": "2:30 PM"
+								},
+								{
+									"label": "Drive along the riverfront",
+									"sub": "8 km · about 20 min",
+									"trailing": "2:50 PM"
+								},
+								{
+									"label": "Drop-off at Largo das Portas",
+									"sub": "Cars can't enter the narrow streets",
+									"trailing": "2:52 PM"
+								},
+								{
+									"label": "Walk to Casa Miradouro",
+									"sub": "3 min uphill · Rua das Escolas Gerais 41",
+									"trailing": "3:00 PM"
+								}
+							]
+						},
+						{
+							"type": "meta",
+							"text": "Your flight lands at 10:20 AM. Check-in opens at 3:00 PM.\nEstimated ride fare $19"
+						}
+					],
+					"actions": [
+						{
+							"label": "Book a ride",
+							"effect": "open",
+							"sublabel": "Pickup 2:30 PM · About $19",
+							"icon": "car",
+							"primary": true,
+							"intent": "Ride booking from Lisbon airport Terminal 1, Bay C, to Largo das Portas near Casa Miradouro, Rua das Escolas Gerais 41, pickup 2:30 PM on Friday, Nov 13, about $19"
+						},
+						{
+							"label": "Add to calendar",
+							"effect": "confirm",
+							"icon": "calendar",
+							"done": "Added to calendar"
+						},
+						{
+							"label": "Message the guesthouse",
+							"effect": "open",
+							"sublabel": "Ask about early bag drop",
+							"icon": "message",
+							"intent": "Message to Casa Miradouro asking about leaving bags early on Friday, Nov 13, before the 3:00 PM check-in"
+						}
+					],
+					"icon": "navigate"
+				}
+			]
+		]
+	}
+}

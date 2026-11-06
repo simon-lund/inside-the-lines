@@ -1,3 +1,2 @@
-// The studio is a purely client-side app: the REPL bundler runs in web workers
-// and the Workspace/Bundler classes cannot exist during SSR.
+// The OS keeps its spaces in localStorage and animates on the client — no SSR needed.
 export const ssr = false;

@@ -1,28 +1,16 @@
 <script>
-	import { Module, Media, Actions, Action, ListRow } from 'mercury';
+	import { Module, Media, Actions, Action, ListRow, Art } from 'mercury';
 
-	const tracks = ['Blue', 'Four Seasons'];
+	const tracks = ['Harbor Lights', 'Low Tide'];
 	/** @type {string | null} */
 	let playing = $state(null);
 	let saved = $state(false);
 </script>
 
-<Module title="Four Seasons" source="Music from Spotify" kind="spotify">
-	<Media title="Four Seasons" subtitle="Single by Taeyeon">
+<Module title="Low Tide" source="Music" kind="music">
+	<Media title="Low Tide" subtitle="Single by Juno Vale">
 		{#snippet art()}
-			<svg viewBox="0 0 132 132" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-				<defs>
-					<linearGradient id="fs-bg" x1="0" y1="0" x2="1" y2="1">
-						<stop offset="0" stop-color="#4a4a52" />
-						<stop offset="1" stop-color="#17171a" />
-					</linearGradient>
-				</defs>
-				<rect width="132" height="132" fill="url(#fs-bg)" />
-				<path d="M22 132c4-32 24-48 46-48s40 16 44 48Z" fill="#cfcfd6" />
-				<circle cx="70" cy="50" r="21" fill="#e6e6ea" />
-				<path d="M48 44c4-20 38-22 44-4-6-8-16-10-24-6-9 4-14 4-20 10Z" fill="#26262b" />
-				<path d="M44 52c-2 22 2 40 8 54h-6c-6-14-8-32-2-54Z" fill="#2e2e33" />
-			</svg>
+			<Art kind="album" tone="cool" />
 		{/snippet}
 		<Actions>
 			<Action

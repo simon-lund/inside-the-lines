@@ -1,0 +1,16 @@
+{
+	"id": "black-knit-runner",
+	"title": "Black Knit Runner — Item from Northline",
+	"prompt": "Show me the Black Knit Runner sneaker from Atelier Nord",
+	"files": [
+		{
+			"name": "App.svelte",
+			"contents": "<script>\n\timport { Canvas } from 'mercury';\n\timport Item from './lib/Item.svelte';\n</script>\n\n<Canvas>\n\t<Item />\n</Canvas>\n"
+		},
+		{
+			"name": "lib/Item.svelte",
+			"contents": "<script>\n\timport { Module, Action } from 'mercury';\n\n\tconst sizes = [7, 8, 9, 10];\n\tlet size = $state(8);\n\tlet added = $state(false);\n\n\tfunction nextSize() {\n\t\tsize = sizes[(sizes.indexOf(size) + 1) % sizes.length];\n\t}\n</script>\n\n<Module title=\"Black Knit Runner\" source=\"Item from Northline\" kind=\"shop\">\n\t<p class=\"m-kicker\">Atelier Nord</p>\n\t<h2 class=\"m-title\">Black Knit Runner</h2>\n\t<p class=\"m-price\">$295</p>\n\n\t<div class=\"my-6 flex justify-center\">\n\t\t<svg viewBox=\"0 0 320 190\" width=\"300\" xmlns=\"http://www.w3.org/2000/svg\" aria-label=\"Black sock sneaker with white sole\">\n\t\t\t<path\n\t\t\t\td=\"M18 148c8-16 40-24 74-26 34-2 60-8 92-4 30 4 64 12 98 14 18 2 26 10 26 20 0 12-12 18-32 20-42 4-100 8-160 8-46 0-86-6-96-14-6-6-6-12-2-18Z\"\n\t\t\t\tfill=\"#f7f7f9\"\n\t\t\t\tstroke=\"#141416\"\n\t\t\t\tstroke-width=\"3\"\n\t\t\t/>\n\t\t\t<path\n\t\t\t\td=\"M142 24c22-14 48-14 66-2 12 8 14 24 10 46-4 20-2 36 10 48 12 12 34 18 62 22-34 6-76 8-118 6-44-2-88-2-118-6 22-14 38-32 48-54 10-20 16-42 24-52 5-6 10-8 16-8Z\"\n\t\t\t\tfill=\"#141416\"\n\t\t\t/>\n\t\t\t<path d=\"M200 60c-10 14-14 30-10 48\" stroke=\"#2c2c30\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\" />\n\t\t\t<text x=\"206\" y=\"128\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"10.5\" font-weight=\"700\" fill=\"#fff\" letter-spacing=\"1.2\">NORD</text>\n\t\t</svg>\n\t</div>\n\n\t{#snippet actions()}\n\t\t<Action label=\"Select a size\" onclick={nextSize}>\n\t\t\t<span class=\"ml-1 border-l border-black/10 pl-3 text-sm\">{size}</span>\n\t\t</Action>\n\t\t<Action icon={added ? 'check' : 'bag'} label={added ? 'Added to bag' : 'Add to bag'} onclick={() => (added = true)} />\n\t\t<Action label=\"See Details\" />\n\t{/snippet}\n</Module>\n"
+		}
+	],
+	"createdAt": "2026-11-05T18:07:44.649Z"
+}

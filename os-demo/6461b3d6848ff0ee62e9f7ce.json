@@ -1,0 +1,89 @@
+{
+	"request": {
+		"mode": "module",
+		"intent": "Gift checkout for Halden Trail Vest 8L, $89, with size choice and gift note",
+		"space": "Gift for Runner Sister",
+		"from": "Halden Trail Vest 8L → Buy as a gift"
+	},
+	"assembly": {
+		"title": null,
+		"flows": [
+			[
+				{
+					"id": "1d4c6785-0",
+					"title": "Gift Checkout",
+					"source": "Fieldnote Outfitters",
+					"kind": "shop",
+					"blocks": [
+						{
+							"type": "kicker",
+							"text": "Fieldnote Outfitters"
+						},
+						{
+							"type": "title",
+							"text": "Halden Trail Vest 8L, gift order"
+						},
+						{
+							"type": "list",
+							"numbered": false,
+							"rows": [
+								{
+									"label": "Size XS",
+									"sub": "In stock"
+								},
+								{
+									"label": "Size S",
+									"sub": "In stock · Mom thinks Dana wears this",
+									"trailing": "Suggested"
+								},
+								{
+									"label": "Size M",
+									"sub": "In stock"
+								},
+								{
+									"label": "Size L",
+									"sub": "Low stock"
+								}
+							]
+						},
+						{
+							"type": "text",
+							"text": "Gift note: \"Happy birthday, Dana. Here's to many more miles. Love, your sister.\""
+						},
+						{
+							"type": "meta",
+							"text": "Gift receipt included, price hidden\nFree exchanges within 30 days\nShips in 2 days to Dana's address"
+						},
+						{
+							"type": "price",
+							"text": "$89"
+						}
+					],
+					"actions": [
+						{
+							"label": "Place gift order",
+							"effect": "confirm",
+							"sublabel": "Size S · $89 total",
+							"icon": "gift",
+							"primary": true,
+							"done": "Order placed"
+						},
+						{
+							"label": "Edit gift note",
+							"effect": "open",
+							"icon": "message",
+							"intent": "Gift note editor for the Halden Trail Vest 8L order, with the current note 'Happy birthday, Dana. Here's to many more miles. Love, your sister.' and a few short alternative wordings"
+						},
+						{
+							"label": "Choose delivery address",
+							"effect": "open",
+							"icon": "location",
+							"intent": "Delivery address options for Dana's gift order of the Halden Trail Vest 8L, shipping in 2 days"
+						}
+					],
+					"icon": "gift"
+				}
+			]
+		]
+	}
+}

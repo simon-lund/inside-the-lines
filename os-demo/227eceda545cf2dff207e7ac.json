@@ -1,0 +1,76 @@
+{
+	"request": {
+		"mode": "module",
+		"intent": "Message thread with Osteria Lanterna host asking about nut and shellfish allergies for a party of six",
+		"space": "Saturday Dinner",
+		"from": "Family-Style Feast → Ask about allergies"
+	},
+	"assembly": {
+		"title": null,
+		"flows": [
+			[
+				{
+					"id": "a78bdc91-0",
+					"title": "Allergy Question",
+					"source": "Messages",
+					"kind": "social",
+					"blocks": [
+						{
+							"type": "kicker",
+							"text": "Osteria Lanterna · Host"
+						},
+						{
+							"type": "title",
+							"text": "Nut and shellfish allergies"
+						},
+						{
+							"type": "message",
+							"text": "Hi, we have a table for six tomorrow at 7:30 PM in the back room. Can the Family-Style Feast be made safe for nut and shellfish allergies?",
+							"from": "me",
+							"time": "Today 2:14 PM"
+						},
+						{
+							"type": "message",
+							"text": "Hi! Yes, we can plan for that. Which dishes are affected, and is the allergy severe or a preference?",
+							"from": "OL",
+							"time": "Today 2:21 PM"
+						},
+						{
+							"type": "message",
+							"text": "Severe nut allergy for one guest, shellfish for another. Priya is also vegetarian.",
+							"from": "me",
+							"time": "Today 2:24 PM"
+						},
+						{
+							"type": "message",
+							"text": "Thanks. The olive oil cake is nut-free, and the branzino is prepared away from shellfish. We'll use the vegetarian swap for Priya and note both allergies on your reservation.",
+							"from": "OL",
+							"time": "Today 2:31 PM"
+						},
+						{
+							"type": "reply",
+							"placeholder": "Reply to Osteria Lanterna…"
+						}
+					],
+					"actions": [
+						{
+							"label": "Share with the group",
+							"effect": "confirm",
+							"sublabel": "Send to Saturday Dinner Crew",
+							"icon": "share",
+							"primary": true,
+							"done": "Shared with the group"
+						},
+						{
+							"label": "Add note to reservation",
+							"effect": "confirm",
+							"icon": "file",
+							"done": "Note added to reservation"
+						}
+					],
+					"icon": "message"
+				}
+			]
+		]
+	}
+}

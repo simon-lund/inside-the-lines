@@ -10,3 +10,4 @@ export { default as ListRow } from './ListRow.svelte';
 export { default as Media } from './Media.svelte';
 export { default as MapView } from './MapView.svelte';
 export { default as Icon } from './Icon.svelte';
+export { default as Art } from './Art.svelte';

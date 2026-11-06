@@ -1,8 +1,17 @@
 import { json } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
-import { MODEL } from '$lib/server/prompt';
+import { intendedProvider, PROVIDERS, resolveAiConfig } from '$lib/server/ai';
+import type { HealthInfo } from '$lib/types';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = () => {
-	return json({ hasApiKey: Boolean(env.ANTHROPIC_API_KEY), model: MODEL });
+	const cfg = resolveAiConfig();
+	const provider = cfg?.provider ?? intendedProvider();
+	const info: HealthInfo = {
+		hasApiKey: cfg !== null,
+		provider,
+		keyVar: PROVIDERS[provider].keyVar,
+		model: cfg?.model ?? PROVIDERS[provider].model,
+		fastModel: cfg?.fastModel ?? PROVIDERS[provider].fastModel
+	};
+	return json(info);
 };

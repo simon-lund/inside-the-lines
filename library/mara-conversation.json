@@ -1,0 +1,16 @@
+{
+	"id": "mara-conversation",
+	"title": "Mara Lindqvist — Conversation",
+	"prompt": "Show me a conversation with Mara Lindqvist",
+	"files": [
+		{
+			"name": "App.svelte",
+			"contents": "<script>\n\timport { Canvas } from 'mercury';\n\timport Conversation from './lib/Conversation.svelte';\n</script>\n\n<Canvas>\n\t<Conversation />\n</Canvas>\n"
+		},
+		{
+			"name": "lib/Conversation.svelte",
+			"contents": "<script>\n\timport { Module, Bubble, Divider, Reply } from 'mercury';\n\n\tlet messages = $state([\n\t\t{\n\t\t\ttext: 'Let me get back to you on that. My schedule is kinda crazy right now with the launch.',\n\t\t\ttime: 'Mon 11:25 PM',\n\t\t\toutgoing: true\n\t\t},\n\t\t{ divider: 'New messages' },\n\t\t{ text: 'Haha. Oh man' },\n\t\t{ text: \"I'm excited to see this beast\", avatar: 'ML', time: 'Mon 11:50 PM' }\n\t]);\n\n\t/** @param {string} text */\n\tfunction send(text) {\n\t\tmessages.push({ text, outgoing: true, time: 'Just now' });\n\t}\n</script>\n\n<Module title=\"Mara Lindqvist @maralind\" source=\"Conversation\" kind=\"social\">\n\t{#each messages as message, i (i)}\n\t\t{#if message.divider}\n\t\t\t<Divider label={message.divider} />\n\t\t{:else}\n\t\t\t<Bubble\n\t\t\t\ttext={message.text}\n\t\t\t\ttime={message.time}\n\t\t\t\tavatar={message.avatar}\n\t\t\t\toutgoing={message.outgoing}\n\t\t\t/>\n\t\t{/if}\n\t{/each}\n\t<Reply onsend={send} />\n</Module>\n"
+		}
+	],
+	"createdAt": "2026-11-05T18:07:42.649Z"
+}

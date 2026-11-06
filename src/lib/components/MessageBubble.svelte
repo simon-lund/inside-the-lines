@@ -3,6 +3,8 @@
 	import FileCode2 from '@lucide/svelte/icons/file-code-2';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+	import ShieldCheck from '@lucide/svelte/icons/shield-check';
+	import WandSparkles from '@lucide/svelte/icons/wand-sparkles';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { Studio, UiMessage } from '$lib/studio.svelte';
@@ -16,6 +18,7 @@
 	const chipLabel = $derived(
 		message.fileNames.length === 1 ? message.fileNames[0] : `${message.fileNames.length} files`
 	);
+	const isLast = $derived(studio.messages.at(-1)?.id === message.id);
 	const phaseLabel = $derived(
 		studio.phase === 'thinking' ? 'Thinking…' : studio.phase === 'writing' ? 'Writing…' : 'Working…'
 	);
@@ -66,8 +69,38 @@
 					</span>
 				</Button>
 			{/if}
+			{#if message.status === 'done' && message.designIssues?.length}
+				<!-- design check: what the guardrail caught in this answer -->
+				<Alert.Root>
+					<ShieldCheck aria-hidden="true" />
+					<Alert.Title>
+						Design check: {message.designIssues.length}
+						{message.designIssues.length === 1 ? 'issue' : 'issues'}
+					</Alert.Title>
+					<Alert.Description>
+						<ul class="list-disc pl-4 text-xs">
+							{#each message.designIssues as issue, i (i)}
+								<li>{issue.message}</li>
+							{/each}
+						</ul>
+					</Alert.Description>
+					{#if isLast}
+						<Alert.Action>
+							<Button
+								variant="outline"
+								size="xs"
+								onclick={() => studio.fixDesign(message)}
+								disabled={studio.streaming || studio.hasApiKey !== true}
+							>
+								<WandSparkles aria-hidden="true" />
+								Fix with AI
+							</Button>
+						</Alert.Action>
+					{/if}
+				</Alert.Root>
+			{/if}
 			{#if message.stopReason === 'refusal'}
-				<p class="text-xs text-muted-foreground italic">Claude declined this request.</p>
+				<p class="text-xs text-muted-foreground italic">The model declined this request.</p>
 			{:else if message.stopReason === 'max_tokens'}
 				<p class="text-xs text-muted-foreground italic">
 					The response hit the length limit and may be incomplete.

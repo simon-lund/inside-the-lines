@@ -1,24 +1,36 @@
 /** Stable machine-readable error codes — the UI branches on these, never on `detail` prose. */
+export type ProviderErrorCode = 'provider_auth' | 'provider_rate_limit' | 'provider_api_error';
+
 export type ErrorCode =
 	| 'missing_api_key'
 	| 'invalid_request'
-	| 'anthropic_auth'
-	| 'anthropic_rate_limit'
-	| 'anthropic_api_error'
+	| ProviderErrorCode
+	| 'os_invalid_output'
 	| 'stream_error'
 	| 'network_error';
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
-	missing_api_key: 'No Anthropic API key configured. Add ANTHROPIC_API_KEY to .env and restart the dev server.',
-	invalid_request: 'The request was malformed — this is a bug in the studio.',
-	anthropic_auth: 'The Anthropic API rejected the key. Check ANTHROPIC_API_KEY in .env.',
-	anthropic_rate_limit: 'Rate limited by the Anthropic API. Wait a moment, then retry.',
-	anthropic_api_error: 'The Claude API returned an error.',
+	missing_api_key: 'No API key configured. Add one to .env (see .env.example) and restart the dev server.',
+	invalid_request: 'The request was malformed — this is a bug in the app.',
+	provider_auth: 'The AI provider rejected the API key. Check the key in .env.',
+	provider_rate_limit: 'Rate limited by the AI provider. Wait a moment, then retry.',
+	provider_api_error: 'The AI provider returned an error.',
+	os_invalid_output: 'The model answered outside the design vocabulary twice. Try again or rephrase.',
 	stream_error: 'The response stream broke off.',
-	network_error: 'Could not reach the studio server.'
+	network_error: 'Could not reach the app server.'
 };
 
-/** One message in the wire format sent to /api/chat (mirrors the Anthropic messages shape). */
+/** What /api/health reports: which provider and models the server will use. */
+export interface HealthInfo {
+	hasApiKey: boolean;
+	provider: 'anthropic' | 'openai' | 'mistral';
+	/** Env var the provider's key is read from — shown in setup hints. */
+	keyVar: string;
+	model: string;
+	fastModel: string;
+}
+
+/** One message in the wire format sent to the AI routes (role + plain text content). */
 export interface ApiChatMessage {
 	role: 'user' | 'assistant';
 	content: string;

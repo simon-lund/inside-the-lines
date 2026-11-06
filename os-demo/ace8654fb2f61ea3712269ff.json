@@ -1,0 +1,163 @@
+{
+	"request": {
+		"mode": "space",
+		"intent": "Find a birthday gift for my sister who runs",
+		"space": "Find a birthday gift for my sister who runs",
+		"from": null
+	},
+	"assembly": {
+		"title": "Gift for Runner Sister",
+		"flows": [
+			[
+				{
+					"id": "a11cb370-0",
+					"title": "Halden Trail Vest 8L",
+					"source": "Fieldnote Outfitters",
+					"kind": "shop",
+					"blocks": [
+						{
+							"type": "art",
+							"art": {
+								"kind": "product",
+								"tone": "green"
+							}
+						},
+						{
+							"type": "kicker",
+							"text": "Fieldnote Outfitters"
+						},
+						{
+							"type": "title",
+							"text": "Halden Trail Vest 8L"
+						},
+						{
+							"type": "text",
+							"text": "A light hydration vest with two soft flasks and a phone pocket that doesn't bounce."
+						},
+						{
+							"type": "price",
+							"text": "$89"
+						},
+						{
+							"type": "meta",
+							"text": "Sizes XS–L · Ships in 2 days"
+						}
+					],
+					"actions": [
+						{
+							"label": "Buy as a gift",
+							"effect": "open",
+							"sublabel": "Arrives before Nov 14",
+							"icon": "gift",
+							"primary": true,
+							"intent": "Gift checkout for Halden Trail Vest 8L, $89, with size choice and gift note"
+						},
+						{
+							"label": "Compare similar",
+							"effect": "open",
+							"icon": "list",
+							"intent": "Three other running gifts under $100 from invented shops: a headlamp, wool socks, a running belt"
+						},
+						{
+							"label": "Save for later",
+							"effect": "confirm",
+							"icon": "save",
+							"done": "Saved to this space"
+						}
+					],
+					"icon": "bag"
+				},
+				{
+					"id": "a11cb370-1",
+					"title": "Brightside Pulse Headlamp",
+					"source": "Lumen & Lace",
+					"kind": "shop",
+					"blocks": [
+						{
+							"type": "art",
+							"art": {
+								"kind": "product",
+								"tone": "warm"
+							}
+						},
+						{
+							"type": "kicker",
+							"text": "Lumen & Lace"
+						},
+						{
+							"type": "title",
+							"text": "Brightside Pulse Headlamp"
+						},
+						{
+							"type": "text",
+							"text": "A rechargeable 300-lumen headlamp for dark winter morning runs."
+						},
+						{
+							"type": "price",
+							"text": "$42"
+						},
+						{
+							"type": "meta",
+							"text": "USB-C charging · 10 hr battery"
+						}
+					],
+					"actions": [
+						{
+							"label": "Buy as a gift",
+							"effect": "open",
+							"icon": "gift",
+							"primary": true,
+							"intent": "Gift checkout for Brightside Pulse Headlamp, $42, with gift note"
+						},
+						{
+							"label": "Save for later",
+							"effect": "confirm",
+							"icon": "save",
+							"done": "Saved to this space"
+						}
+					],
+					"icon": "bag"
+				}
+			],
+			[
+				{
+					"id": "a11cb370-2",
+					"title": "Ask Mom about Dana's size",
+					"source": "Messages",
+					"kind": "social",
+					"blocks": [
+						{
+							"type": "text",
+							"text": "Dana's birthday is coming up. A quick check on sizes and what she already owns avoids a return."
+						},
+						{
+							"type": "message",
+							"text": "Do you know if Dana already has a running vest? Thinking of getting her one.",
+							"from": "me",
+							"time": "Fri 9:12 AM"
+						},
+						{
+							"type": "message",
+							"text": "She mentioned hers is falling apart! I think she wears a small.",
+							"from": "LK",
+							"time": "Fri 9:40 AM"
+						},
+						{
+							"type": "reply",
+							"placeholder": "Reply to Mom…"
+						}
+					],
+					"actions": [
+						{
+							"label": "Remind me to order Monday",
+							"effect": "confirm",
+							"icon": "bell",
+							"done": "Reminder set for Monday"
+						}
+					],
+					"icon": "message"
+				}
+			]
+		]
+	}
+}

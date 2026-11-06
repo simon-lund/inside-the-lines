@@ -10,7 +10,7 @@
 	 * @type {{
 	 *   title: string,
 	 *   source?: string,
-	 *   kind?: 'location' | 'twitter' | 'spotify' | 'shop' | 'generic',
+	 *   kind?: 'location' | 'social' | 'music' | 'shop' | 'generic',
 	 *   icon?: import('svelte').Component<any>,
 	 *   mic?: boolean,
 	 *   more?: string,
@@ -38,7 +38,7 @@
 	<header class="m-header">
 		<span class="m-header-icon" data-kind={kind}><Icon kind={icon ?? kind} size={12} /></span>
 		<span class="m-header-title">
-			{title}{#if source}<span class="m-header-source"> · {source}</span>{/if}
+			{title}{#if source}<span class="m-header-source">&nbsp;· {source}</span>{/if}
 		</span>
 		{#if mic}
 			<span class="m-mic" title="Talk to this module"><Icon kind="mic" size={14} /></span>
@@ -92,11 +92,11 @@
 		border-radius: 5px;
 		color: var(--m-muted);
 	}
-	.m-header-icon[data-kind='twitter'] {
-		color: #1d9bf0;
+	.m-header-icon[data-kind='social'] {
+		color: #3b82f6;
 	}
-	.m-header-icon[data-kind='spotify'] {
-		color: #1db954;
+	.m-header-icon[data-kind='music'] {
+		color: #22a35a;
 	}
 	.m-header-icon[data-kind='shop'] {
 		color: #111;

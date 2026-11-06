@@ -10,10 +10,10 @@
 	}
 </script>
 
-<Module title="Black AW Futureshell Sneakers" source="Item from SSENSE" kind="shop">
-	<p class="m-kicker">Balenciaga</p>
-	<h2 class="m-title">Black Bonded Speed Sneakers</h2>
-	<p class="m-price">$795</p>
+<Module title="Black Knit Runner" source="Item from Northline" kind="shop">
+	<p class="m-kicker">Atelier Nord</p>
+	<h2 class="m-title">Black Knit Runner</h2>
+	<p class="m-price">$295</p>
 
 	<div class="my-6 flex justify-center">
 		<svg viewBox="0 0 320 190" width="300" xmlns="http://www.w3.org/2000/svg" aria-label="Black sock sneaker with white sole">
@@ -28,7 +28,7 @@
 				fill="#141416"
 			/>
 			<path d="M200 60c-10 14-14 30-10 48" stroke="#2c2c30" stroke-width="3" fill="none" stroke-linecap="round" />
-			<text x="188" y="128" font-family="Arial, Helvetica, sans-serif" font-size="10.5" font-weight="700" fill="#fff" letter-spacing="1.2">BALENCIAGA</text>
+			<text x="206" y="128" font-family="Arial, Helvetica, sans-serif" font-size="10.5" font-weight="700" fill="#fff" letter-spacing="1.2">NORD</text>
 		</svg>
 	</div>
 
