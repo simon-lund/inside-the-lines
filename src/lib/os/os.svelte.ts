@@ -28,7 +28,7 @@ export interface Space {
 }
 
 // v3: a space is a page of cells; v2 (flows of modules) is not migrated.
-const STORAGE_KEY = 'klementine-pages:spaces:v3';
+const STORAGE_KEY = 'inside-the-lines:spaces:v3';
 
 const newKey = () => crypto.randomUUID();
 

@@ -2,7 +2,7 @@
 	@component
 	The name in the top bar.
 -->
-<span class="name">Klementine Pages</span>
+<span class="name">Inside the Lines</span>
 
 <style>
 	.name {

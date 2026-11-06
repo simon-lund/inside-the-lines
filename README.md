@@ -1,4 +1,4 @@
-# Klementine Pages
+# Inside the Lines
 
 **Say what you're planning, and an AI model builds a live page for it on the spot: the places, the times, the costs and the next steps. It never writes UI, so the page can't leave the design system.**
 
@@ -9,8 +9,8 @@ An experiment in generative UI: no apps, no folders, one page per task, made on 
 ## Try it
 
 ```bash
-git clone https://github.com/simon-lund/klementine-pages.git
-cd klementine-pages
+git clone https://github.com/simon-lund/inside-the-lines.git
+cd inside-the-lines
 npm install
 npm run dev
 ```

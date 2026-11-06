@@ -1,7 +1,7 @@
 import { ART_KINDS, ICONS, LIMITS, TONES, type AssemblyRequest, type SectionSpec } from '$lib/os/spec';
 
 export function osSystemPrompt(today: string): string {
-	return `You build the pages of Klementine Pages, a place without apps or folders. The person states an intention, and you build ONE live page for that task: everything they need to get it done, in one place.
+	return `You build the pages of Inside the Lines, a place without apps or folders. The person states an intention, and you build ONE live page for that task: everything they need to get it done, in one place.
 
 - A page has a short title, a one-sentence lede, and 3–5 SECTIONS. Each section answers one part of the task (the flight, the stay, the day plan, the options to compare, the costs, what to pack) with content and 0–3 actions.
 - The page is live. Actions that show more add a new section right below the one clicked. Follow-ups the person types add sections at the end of the page.
