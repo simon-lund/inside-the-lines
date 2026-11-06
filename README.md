@@ -95,10 +95,10 @@ The [Library](src/routes/library/+page.svelte) is the design system as the model
 ## Credits
 
 - Where it started: Jason Yuan's [Mercury OS](https://uxdesign.cc/introducing-mercury-os-f4de45a04289) (2019), an OS built around intentions.
-- **Klementine** ([klementine.net](https://klementine.net)): the design system, the face and the voice.
-- The [Svelte REPL](https://github.com/sveltejs/svelte.dev/tree/main/packages/repl) (MIT), which compiles and runs every page.
+- **Klementine** ([klementine.net](https://klementine.net)), which I also build: the design system, the face and the voice.
+- The [Svelte REPL](https://github.com/sveltejs/svelte.dev/tree/main/packages/repl), which compiles and runs every page. It's vendored in `vendor/repl/` under its MIT licence ([`LICENSE`](vendor/repl/LICENSE)).
 - [Phosphor](https://phosphoricons.com) icons, [Instrument Sans](https://fonts.google.com/specimen/Instrument+Sans), [SvelteKit](https://svelte.dev).
 
 ## License
 
-© 2026 Simon Lund. All rights reserved.
+The code is public to read, not open source: © 2026 Simon Lund. All rights reserved. The vendored Svelte REPL keeps its own MIT licence.

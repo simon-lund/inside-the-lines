@@ -2,8 +2,8 @@ Vendored from https://github.com/sveltejs/svelte.dev packages/repl
 commit 3817d6ed3ad5cadfc3f50224459424225b791cb4 (2026-09-05).
 
 License: MIT, as declared in the package's own package.json (kept in this folder).
-The upstream repository ships no separate LICENSE file; copyright remains with the
-Svelte contributors.
+The upstream repository ships no separate LICENSE file, so LICENSE in this folder
+carries the MIT notice; copyright remains with the Svelte team and contributors.
 
 Local changes:
 - package.json: removed scripts, devDependencies, files, and the workspace-protocol deps @sveltejs/site-kit + icons.
