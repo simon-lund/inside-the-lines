@@ -36,7 +36,7 @@ With several keys set, `AI_PROVIDER` picks one. A page takes 20 to 60 seconds to
 
 ![The page being written, the code arriving](docs/screenshots/writing.png)
 
-| *Castle tickets*, pressed | Gift for a runner | Dinner for six | Coffee with Mara |
+| A button in the page, pressed | Gift for a runner | Dinner for six | Coffee with Mara |
 |---|---|---|---|
 | ![](docs/screenshots/ask.png) | ![](docs/screenshots/page-gift.png) | ![](docs/screenshots/page-dinner.png) | ![](docs/screenshots/page-coffee.png) |
 

@@ -98,8 +98,16 @@ try {
 	await sleep(3000);
 	await shot(page, 'hero');
 
-	// A button inside the page calls ask(): a new section, right below the one that asked.
-	await settle(page, () => page.frameLocator('iframe').getByRole('button', { name: 'Castle tickets' }).click());
+	// A button inside the page calls ask(): a new section, right below the one that asked. The
+	// first such button on the page, so the shot follows the recordings.
+	const label = await page.evaluate(() => {
+		for (const f of window.__pages.active.files) {
+			const m = f.contents.match(/\bask\(\s*(['"`])(?:\\.|(?!\1).)*?\1\s*,\s*(['"`])((?:\\.|(?!\2).)*?)\2\s*\)/s);
+			if (m) return m[3];
+		}
+		throw new Error('No ask() on the page');
+	});
+	await settle(page, () => page.frameLocator('iframe').getByRole('button', { name: label }).click());
 	await sheet(page, 'ask');
 
 	await open(page, GIFT);
