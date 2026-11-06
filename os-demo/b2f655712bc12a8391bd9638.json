@@ -1,0 +1,214 @@
+{
+	"request": {
+		"mode": "page",
+		"intent": "Dinner for six on Saturday",
+		"page": "Dinner for six on Saturday",
+		"from": null
+	},
+	"assembly": {
+		"title": "Saturday Dinner",
+		"lede": "Six people at Forno Alto on Saturday, Nov 7 at 7:30 PM, with a table held, a menu to share and a few things to settle before then.",
+		"sections": [
+			{
+				"kicker": "Sat, Nov 7 · 7:30 PM · Party of 6",
+				"title": "Forno Alto",
+				"blocks": [
+					{
+						"type": "text",
+						"text": "A wood-fired Italian room with a long communal table, quiet enough to talk. The back table for six is held until 6:00 PM today."
+					},
+					{
+						"type": "map",
+						"places": [
+							{
+								"label": "Forno Alto",
+								"sublabel": "214 Alder Street"
+							}
+						]
+					},
+					{
+						"type": "meta",
+						"text": "214 Alder Street\nOpen until 11:00 PM · Walk-in friendly, but the table is not"
+					}
+				],
+				"actions": [
+					{
+						"label": "Confirm the reservation",
+						"sublabel": "Held until 6:00 PM today",
+						"icon": "check",
+						"primary": true,
+						"effect": "confirm",
+						"done": "Table for 6 confirmed"
+					},
+					{
+						"label": "Show other restaurants",
+						"icon": "search",
+						"effect": "open",
+						"intent": "Three alternative restaurants with a table for six on Saturday, Nov 7 around 7:30 PM, compared by cuisine, price and availability"
+					}
+				]
+			},
+			{
+				"kicker": "Guests",
+				"title": "Who's coming",
+				"blocks": [
+					{
+						"type": "table",
+						"columns": [
+							"Guest",
+							"Status",
+							"Note"
+						],
+						"rows": [
+							[
+								"You",
+								"Going",
+								"Host"
+							],
+							[
+								"Mara Lindqvist",
+								"Going",
+								"Arrives 7:45"
+							],
+							[
+								"Tobias Reyes",
+								"Going",
+								"Vegetarian"
+							],
+							[
+								"Inès Okafor",
+								"Going",
+								"No shellfish"
+							],
+							[
+								"Daniel Pryce",
+								"Pending",
+								"Replies by tonight"
+							],
+							[
+								"Hana Sato",
+								"Pending",
+								"Replies by tonight"
+							]
+						]
+					}
+				],
+				"actions": [
+					{
+						"label": "Send details to the group",
+						"sublabel": "Address, time and a map link",
+						"icon": "send",
+						"primary": true,
+						"effect": "confirm",
+						"done": "Sent to 5 guests"
+					},
+					{
+						"label": "Remind pending guests",
+						"icon": "bell",
+						"effect": "confirm",
+						"done": "Reminder sent to 2"
+					}
+				]
+			},
+			{
+				"kicker": "Shared plates · Family style",
+				"title": "The Menu",
+				"blocks": [
+					{
+						"type": "text",
+						"text": "Built around Tobias and Inès: nothing with shellfish, and the vegetarian dishes are not an afterthought."
+					},
+					{
+						"type": "list",
+						"numbered": false,
+						"rows": [
+							{
+								"label": "Charred leeks with hazelnut",
+								"sub": "Vegetarian",
+								"trailing": "$14"
+							},
+							{
+								"label": "Burrata, blood orange, fennel",
+								"sub": "Vegetarian",
+								"trailing": "$17"
+							},
+							{
+								"label": "Wild mushroom pappardelle",
+								"sub": "Vegetarian",
+								"trailing": "$24"
+							},
+							{
+								"label": "Roast chicken with salsa verde",
+								"sub": "Serves 3",
+								"trailing": "$38"
+							},
+							{
+								"label": "Olive oil cake",
+								"sub": "To share",
+								"trailing": "$12"
+							}
+						]
+					}
+				],
+				"actions": [
+					{
+						"label": "Pre-order the menu",
+						"sublabel": "The kitchen preps for the table",
+						"icon": "food",
+						"effect": "confirm",
+						"done": "Menu pre-ordered"
+					},
+					{
+						"label": "Add wine pairing",
+						"icon": "plus",
+						"effect": "open",
+						"intent": "Wine list suggestions for a table of six at Forno Alto, two reds and one white, with bottle prices"
+					}
+				]
+			},
+			{
+				"kicker": "Estimate",
+				"title": "The Bill",
+				"blocks": [
+					{
+						"type": "summary",
+						"rows": [
+							{
+								"label": "Food (5 plates, 2 chicken)",
+								"value": "$155"
+							},
+							{
+								"label": "Wine (3 bottles)",
+								"value": "$126"
+							},
+							{
+								"label": "Tax",
+								"value": "$25"
+							},
+							{
+								"label": "Tip (20%)",
+								"value": "$61"
+							}
+						],
+						"total": {
+							"label": "Total",
+							"value": "$367"
+						}
+					},
+					{
+						"type": "meta",
+						"text": "About $61 per person if split six ways"
+					}
+				],
+				"actions": [
+					{
+						"label": "Split the bill evenly",
+						"icon": "users",
+						"effect": "open",
+						"intent": "Bill split for six people at $61 each, with a payment request status per guest"
+					}
+				]
+			}
+		]
+	}
+}

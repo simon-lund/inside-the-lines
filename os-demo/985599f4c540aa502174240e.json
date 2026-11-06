@@ -1,0 +1,84 @@
+{
+	"request": {
+		"mode": "section",
+		"intent": "Seat picker for the Friday Nov 13 Porto Aéreo 418 flight to Lisbon, window seats highlighted",
+		"page": "Lisbon Weekend",
+		"from": "Porto Aéreo 418 to Lisbon → Choose seats"
+	},
+	"assembly": {
+		"sections": [
+			{
+				"title": "Seats on Porto Aéreo 418",
+				"kicker": "Fri, Nov 13 · Window seats",
+				"blocks": [
+					{
+						"type": "text",
+						"text": "Window seats are highlighted below, with the exit row recommended for the 7 h 15 min crossing. Seat fees are not in your trip cost yet."
+					},
+					{
+						"type": "table",
+						"columns": [
+							"Seat",
+							"Position",
+							"Fee"
+						],
+						"rows": [
+							[
+								"12A",
+								"Window · front of cabin",
+								"$24"
+							],
+							[
+								"14A",
+								"Window · exit row, extra legroom",
+								"$38"
+							],
+							[
+								"18A",
+								"Window · standard",
+								"$12"
+							],
+							[
+								"18F",
+								"Window · standard",
+								"$12"
+							],
+							[
+								"24A",
+								"Window · quiet rear section",
+								"Free"
+							]
+						],
+						"pick": 1
+					},
+					{
+						"type": "meta",
+						"text": "Return flight, Mon Nov 16 · 6:10 PM\nSeats for the return are chosen separately"
+					}
+				],
+				"actions": [
+					{
+						"label": "Select seat 14A",
+						"sublabel": "Window · exit row · $38",
+						"icon": "check",
+						"primary": true,
+						"effect": "confirm",
+						"done": "Seat 14A selected"
+					},
+					{
+						"label": "Show aisle seats",
+						"icon": "list",
+						"effect": "open",
+						"intent": "Aisle seats for the Friday Nov 13 Porto Aéreo 418 flight to Lisbon, with fees and legroom"
+					},
+					{
+						"label": "Pick seats for the return",
+						"icon": "plane",
+						"effect": "open",
+						"intent": "Seat picker for the Monday Nov 16 Porto Aéreo flight from Lisbon at 6:10 PM, window seats highlighted"
+					}
+				]
+			}
+		]
+	}
+}

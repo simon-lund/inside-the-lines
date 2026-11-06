@@ -1,5 +1,5 @@
 import type { AiConfig, ProviderId } from './config';
-import { ProviderError, type JsonRequest, type TextEvent, type TextRequest } from './types';
+import { ProviderError, type JsonRequest } from './types';
 
 /**
  * OpenAI and Mistral both speak the Chat Completions wire format, so one plain-fetch
@@ -10,15 +10,7 @@ const BASE_URL: Partial<Record<ProviderId, string>> = {
 	mistral: 'https://api.mistral.ai/v1'
 };
 
-// Chat Completions finish reasons → the stop reasons the UI already understands.
-const STOP_REASONS: Record<string, string> = {
-	stop: 'end_turn',
-	length: 'max_tokens',
-	model_length: 'max_tokens',
-	content_filter: 'refusal'
-};
-
-function toChatMessages(req: TextRequest) {
+function toChatMessages(req: JsonRequest) {
 	return [{ role: 'system', content: req.system }, ...req.messages];
 }
 
@@ -37,48 +29,8 @@ async function post(cfg: AiConfig, body: Record<string, unknown>, signal?: Abort
 	throw new ProviderError('provider_api_error', `${res.status}: ${detail}`);
 }
 
-export async function* streamOpenAiCompatible(
-	cfg: AiConfig,
-	req: TextRequest
-): AsyncGenerator<TextEvent> {
-	const res = await post(
-		cfg,
-		{ model: cfg.model, stream: true, messages: toChatMessages(req) },
-		req.signal
-	);
-	if (!res.body) throw new ProviderError('provider_api_error', 'Empty response body.');
-
-	// No thinking stream here — say so once so the UI shows progress before the first token.
-	yield { type: 'thinking' };
-
-	const reader = res.body.getReader();
-	const decoder = new TextDecoder();
-	let buffer = '';
-	let stopReason: string | null = null;
-
-	for (;;) {
-		const { done, value } = await reader.read();
-		if (done) break;
-		buffer += decoder.decode(value, { stream: true });
-		const lines = buffer.split('\n');
-		buffer = lines.pop() ?? '';
-		for (const line of lines) {
-			if (!line.startsWith('data:')) continue;
-			const data = line.slice(5).trim();
-			if (!data || data === '[DONE]') continue;
-			const chunk = JSON.parse(data) as {
-				choices?: { delta?: { content?: string | null }; finish_reason?: string | null }[];
-			};
-			const choice = chunk.choices?.[0];
-			if (choice?.delta?.content) yield { type: 'text', text: choice.delta.content };
-			if (choice?.finish_reason) stopReason = STOP_REASONS[choice.finish_reason] ?? choice.finish_reason;
-		}
-	}
-	yield { type: 'done', stopReason };
-}
-
 export async function completeOpenAiCompatible(cfg: AiConfig, req: JsonRequest): Promise<string> {
-	const body: Record<string, unknown> = { model: cfg.fastModel, messages: toChatMessages(req) };
+	const body: Record<string, unknown> = { model: cfg.model, messages: toChatMessages(req) };
 	// Mistral documents JSON mode on Chat Completions; for OpenAI the prompt asks for JSON
 	// and the server-side validator is the real check either way.
 	if (cfg.provider === 'mistral') body.response_format = { type: 'json_object' };

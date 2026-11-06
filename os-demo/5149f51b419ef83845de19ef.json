@@ -1,0 +1,88 @@
+{
+	"request": {
+		"mode": "section",
+		"intent": "Wine list suggestions for a table of six at Forno Alto, two reds and one white, with bottle prices",
+		"page": "Saturday Dinner",
+		"from": "The Menu → Add wine pairing"
+	},
+	"assembly": {
+		"sections": [
+			{
+				"title": "Wine for the Table",
+				"kicker": "Forno Alto · Two reds, one white",
+				"blocks": [
+					{
+						"type": "text",
+						"text": "One crisp white for the starters and two reds, a lighter one for the mushrooms and a firmer one for the chicken. Three bottles is about half a bottle each."
+					},
+					{
+						"type": "table",
+						"columns": [
+							"Wine",
+							"Style",
+							"Bottle",
+							"Pairs with"
+						],
+						"rows": [
+							[
+								"Costa Chiara Vermentino 2024",
+								"White, crisp, citrus",
+								"$38",
+								"Burrata, charred leeks"
+							],
+							[
+								"Podere Alba Sangiovese 2022",
+								"Red, light, cherry",
+								"$42",
+								"Mushroom pappardelle"
+							],
+							[
+								"Cantina Roverin Nebbiolo 2020",
+								"Red, structured, dry",
+								"$46",
+								"Roast chicken, salsa verde"
+							]
+						]
+					},
+					{
+						"type": "summary",
+						"rows": [
+							{
+								"label": "White (1 bottle)",
+								"value": "$38"
+							},
+							{
+								"label": "Reds (2 bottles)",
+								"value": "$88"
+							}
+						],
+						"total": {
+							"label": "Wine",
+							"value": "$126"
+						}
+					},
+					{
+						"type": "meta",
+						"text": "Matches the wine line in The Bill.\nPrices are from the Forno Alto list, before tax and tip."
+					}
+				],
+				"actions": [
+					{
+						"label": "Request these bottles for the table",
+						"sublabel": "Poured when you sit down at 7:30 PM",
+						"icon": "food",
+						"primary": true,
+						"effect": "confirm",
+						"done": "Bottles requested"
+					},
+					{
+						"label": "Show non-alcoholic options",
+						"icon": "search",
+						"effect": "open",
+						"intent": "Non-alcoholic drink options at Forno Alto for a table of six, with prices"
+					}
+				]
+			}
+		]
+	}
+}

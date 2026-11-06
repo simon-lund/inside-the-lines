@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Assembly, AssemblyRequest } from '$lib/os/spec';
+import type { AssemblyRequest } from '$lib/os/spec';
 
 /**
- * Replay cache for assembled modules, keyed by the click — not by the whole space.
- * The same intention, or the same action on the same module, replays the same
+ * Replay cache for assembled pages and sections, keyed by the click — not by the whole
+ * page. The same intention, or the same action on the same section, replays the same
  * result in any order. That keeps demos instant and makes the committed examples
  * clickable without an API key.
  *
@@ -20,19 +20,20 @@ export function cacheKey(req: AssemblyRequest): string {
 	const parts = [
 		req.mode,
 		normalize(req.intent),
-		req.mode === 'space' ? '' : normalize(req.space?.title),
-		normalize(req.from?.module.title),
+		req.mode === 'page' ? '' : normalize(req.page?.title),
+		normalize(req.from?.section.title),
 		normalize(req.from?.action)
 	];
 	return createHash('sha256').update(parts.join('\u001f')).digest('hex').slice(0, 24);
 }
 
 interface CacheEntry {
-	request: { mode: string; intent: string; space: string | null; from: string | null };
-	assembly: Assembly;
+	request: { mode: string; intent: string; page: string | null; from: string | null };
+	/** The model's reply as it came (parsed JSON). Never trusted: it is sanitized on every read. */
+	assembly: unknown;
 }
 
-export async function readCache(key: string): Promise<Assembly | null> {
+export async function readCache(key: string): Promise<unknown | null> {
 	for (const dir of [DEMO_DIR, LOCAL_DIR]) {
 		try {
 			const entry = JSON.parse(await readFile(path.join(dir, `${key}.json`), 'utf8')) as CacheEntry;
@@ -44,14 +45,14 @@ export async function readCache(key: string): Promise<Assembly | null> {
 	return null;
 }
 
-export async function writeCache(key: string, req: AssemblyRequest, assembly: Assembly): Promise<void> {
+export async function writeCache(key: string, req: AssemblyRequest, assembly: unknown): Promise<void> {
 	const entry: CacheEntry = {
 		// Human-readable provenance, so a reviewer can tell what each recording answers.
 		request: {
 			mode: req.mode,
 			intent: req.intent,
-			space: req.space?.title ?? null,
-			from: req.from ? `${req.from.module.title} → ${req.from.action}` : null
+			page: req.page?.title ?? null,
+			from: req.from ? `${req.from.section.title} → ${req.from.action}` : null
 		},
 		assembly
 	};

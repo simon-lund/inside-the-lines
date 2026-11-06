@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { Canvas } from '$lib/mercury/src/index.js';
-	import Flow from '$lib/os/components/Flow.svelte';
-	import Locus from '$lib/os/components/Locus.svelte';
+	import { Canvas } from '$lib/design/index.js';
+		import Locus from '$lib/os/components/Locus.svelte';
+	import PageView from '$lib/os/components/PageView.svelte';
 	import SpacesBar from '$lib/os/components/SpacesBar.svelte';
 	import { EXAMPLE_INTENTS } from '$lib/os/examples';
 	import { Os } from '$lib/os/os.svelte';
@@ -15,21 +15,10 @@
 		if (import.meta.env.DEV) (window as unknown as { __os: Os }).__os = os;
 	});
 
-	// A mouse wheel only scrolls vertically: when the page itself has nowhere to go, it moves the band.
-	function wheelScrollsBand(band: HTMLElement) {
-		const onwheel = (e: WheelEvent) => {
-			const page = document.scrollingElement;
-			if (Math.abs(e.deltaX) >= Math.abs(e.deltaY) || !page || page.scrollHeight > page.clientHeight) return;
-			band.scrollLeft += e.deltaY;
-			e.preventDefault();
-		};
-		band.addEventListener('wheel', onwheel, { passive: false });
-		return { destroy: () => band.removeEventListener('wheel', onwheel) };
-	}
 </script>
 
 <svelte:head>
-	<title>{os.active ? `${os.active.title} · Mercury` : 'Mercury OS prototype'}</title>
+	<title>{os.active ? os.active.title : 'New page'}</title>
 </svelte:head>
 
 <Canvas>
@@ -39,8 +28,7 @@
 		{#if !os.active}
 			<!-- empty: no space open — state an intention -->
 			<section class="empty" in:fade={{ duration: 200 }}>
-				<h1>No apps. No folders.</h1>
-				<p class="lede">Say what you want to do. The modules you need are generated on the spot.</p>
+				<h1>Say what you’re planning.<span>She builds the page for it.</span></h1>
 				<Locus {os} docked={false} />
 				<div class="examples">
 					{#each EXAMPLE_INTENTS as intent (intent)}
@@ -49,24 +37,22 @@
 				</div>
 				{#if os.health && !os.health.hasApiKey}
 					<p class="hint">
-						No API key set: the examples above are recorded and work offline. Add
-						<code>{os.health.keyVar}</code> to <code>.env</code> to assemble anything.
+						No API key yet, so only these four work. Add <code>{os.health.keyVar}</code> to
+						<code>.env</code> for anything else.
 					</p>
 				{/if}
 			</section>
-		{:else if os.active.flows.length === 0}
-			<!-- empty space: every module was removed -->
+		{:else if os.active.cells.length === 0}
+			<!-- empty page: every section was removed -->
 			<section class="empty" in:fade={{ duration: 200 }}>
-				<p class="lede">This space is empty. Add something below, or close it.</p>
+				<p class="lede">This page is empty. Add something below, or close it.</p>
 			</section>
 		{:else}
-			<!-- data: the space's flows, side by side in one band -->
+			<!-- data: the space as one page -->
 			{#key os.active.key}
-				<section class="space" in:fade={{ duration: 200 }} use:wheelScrollsBand>
-					{#each os.active.flows as flow (flow.key)}
-						<Flow {os} {flow} />
-					{/each}
-				</section>
+				<div class="page" in:fade={{ duration: 200 }}>
+					<PageView {os} space={os.active} />
+				</div>
 			{/key}
 		{/if}
 
@@ -96,14 +82,18 @@
 	}
 	h1 {
 		margin: 0;
-		font-size: 40px;
+		font-size: 2.5rem;
+		line-height: 2.75rem;
 		font-weight: 600;
-		letter-spacing: -0.03em;
+		letter-spacing: -0.04em;
 	}
-	.lede {
-		margin: 0 0 18px;
-		font-size: 17px;
-		color: var(--m-muted);
+	h1 {
+		margin-bottom: 18px;
+	}
+	/* The second line says what she does, a step quieter. */
+	h1 span {
+		display: block;
+		color: var(--m-ink-2);
 	}
 	.examples {
 		display: flex;
@@ -112,46 +102,43 @@
 		gap: 8px;
 		margin-top: 6px;
 	}
+	/* Suggestions are a set: flat chips, a stronger tint on hover. */
 	.examples button {
-		border: none;
+		height: var(--m-control-sm);
+		padding: 0 16px;
 		border-radius: 999px;
-		background: var(--m-pill);
-		padding: 8px 14px;
-		font: inherit;
-		font-size: 13px;
-		color: var(--m-text);
+		background: var(--m-tint);
+		font-size: var(--m-type-tab);
+		font-weight: 500;
+		color: var(--m-ink);
 		cursor: pointer;
-		transition: background-color 150ms ease;
+		transition:
+			background-color var(--m-dur-quick) var(--m-ease-settle),
+			scale var(--m-dur-quick) var(--m-ease-settle);
 	}
 	.examples button:hover {
-		background: var(--m-pill-hover);
+		background: var(--m-tint-strong);
+	}
+	.examples button:active {
+		scale: 0.97;
+		transition-duration: var(--m-dur-press);
 	}
 	.hint {
 		margin: 12px 0 0;
-		font-size: 12.5px;
-		color: var(--m-muted);
+		font-size: var(--m-type-label);
+		line-height: var(--m-type-label-leading);
+		color: var(--m-ink-2);
 	}
 	code {
-		font-size: 12px;
-		background: var(--m-pill);
-		border-radius: 4px;
-		padding: 1px 5px;
+		font-family: var(--m-font-mono);
+		font-size: var(--m-type-caption);
+		background: var(--m-tint);
+		border-radius: var(--m-radius-xs);
+		padding: 1px 6px;
 	}
-	/* One horizontal band. Intentions sit further apart than the modules within one. */
-	.space {
-		display: flex;
-		align-items: flex-start;
-		gap: 72px;
-		overflow-x: auto;
-		/* Bleed to the window edges, so modules scroll off-screen instead of clipping at the
-		   canvas padding; room below for shadows and the docked Locus. */
-		margin: 0 -48px;
-		padding: 0 48px 120px;
-		scroll-padding-inline: 48px;
-		scrollbar-width: none;
-	}
-	.space::-webkit-scrollbar {
-		display: none;
+	.page {
+		/* Keep the end of the page clear of the docked Locus. */
+		padding-bottom: 120px;
 	}
 	.dock {
 		position: fixed;
@@ -161,13 +148,11 @@
 		z-index: 10;
 	}
 	@media (max-width: 640px) {
+		.os {
+			gap: 20px;
+		}
 		h1 {
 			font-size: 30px;
-		}
-		.space {
-			gap: 40px;
-			padding-inline: 16px;
-			scroll-padding-inline: 16px;
 		}
 	}
 </style>

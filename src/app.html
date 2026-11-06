@@ -1,9 +1,20 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<meta name="text-scale" content="scale" />
+		<!-- Both schemes are supported: the browser paints the right canvas before the CSS arrives. -->
+		<meta name="color-scheme" content="light dark" />
+		<meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#1b1916" media="(prefers-color-scheme: dark)" />
+		<!-- Fonts: linked here, not @imported from CSS, so the request starts with the HTML. -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+		/>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

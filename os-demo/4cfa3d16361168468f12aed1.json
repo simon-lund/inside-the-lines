@@ -1,0 +1,116 @@
+{
+	"request": {
+		"mode": "section",
+		"intent": "Full menu for Cafe Tilde: coffee, tea, pastries and light bites with prices",
+		"page": "Coffee with Mara",
+		"from": "What's good there → See the full menu"
+	},
+	"assembly": {
+		"sections": [
+			{
+				"title": "Full menu",
+				"kicker": "Cafe Tilde · 8:00 AM – 6:00 PM",
+				"blocks": [
+					{
+						"type": "text",
+						"text": "Short and seasonal. Pastries are baked each morning and the savory plates are served all day."
+					},
+					{
+						"type": "table",
+						"columns": [
+							"Coffee and tea",
+							"Price"
+						],
+						"rows": [
+							[
+								"Espresso",
+								"$3.50"
+							],
+							[
+								"Cortado",
+								"$4.50"
+							],
+							[
+								"Oat flat white",
+								"$5.25"
+							],
+							[
+								"Pour-over, single origin",
+								"$5.50"
+							],
+							[
+								"Pot of jasmine tea",
+								"$4.75"
+							],
+							[
+								"Hot cocoa, dark",
+								"$4.75"
+							]
+						]
+					},
+					{
+						"type": "table",
+						"columns": [
+							"Pastries",
+							"Price"
+						],
+						"rows": [
+							[
+								"Cardamom bun",
+								"$5.00"
+							],
+							[
+								"Butter croissant",
+								"$4.25"
+							],
+							[
+								"Brown sugar scone",
+								"$4.50"
+							],
+							[
+								"Pear and almond tart",
+								"$7.00"
+							]
+						]
+					},
+					{
+						"type": "table",
+						"columns": [
+							"Light bites",
+							"Price"
+						],
+						"rows": [
+							[
+								"Soft egg on toasted rye",
+								"$9.50"
+							],
+							[
+								"Roasted squash soup",
+								"$8.00"
+							],
+							[
+								"Goat cheese and fig toast",
+								"$10.00"
+							]
+						]
+					}
+				],
+				"actions": [
+					{
+						"label": "Add a tart to share",
+						"sublabel": "Pear and almond · $7.00",
+						"icon": "food",
+						"effect": "confirm",
+						"done": "Added to the table order"
+					},
+					{
+						"label": "Send the menu to Mara",
+						"icon": "send",
+						"effect": "confirm",
+						"done": "Sent to Mara"
+					}
+				]
+			}
+		]
+	}
+}

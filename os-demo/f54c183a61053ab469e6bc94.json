@@ -1,0 +1,82 @@
+{
+	"request": {
+		"mode": "section",
+		"intent": "Sizing guide for the Stridewell Tempo Trail Vest, with chest measurements and how to find her size without asking",
+		"page": "Gift for a Runner",
+		"from": "Top pick: Tempo Trail Vest → See sizing guide"
+	},
+	"assembly": {
+		"sections": [
+			{
+				"title": "Sizing guide",
+				"kicker": "Stridewell Tempo Trail Vest · XS–L",
+				"blocks": [
+					{
+						"type": "table",
+						"columns": [
+							"Size",
+							"Chest (in)",
+							"Chest (cm)"
+						],
+						"rows": [
+							[
+								"XS",
+								"28–31",
+								"71–79"
+							],
+							[
+								"S",
+								"32–35",
+								"81–89"
+							],
+							[
+								"M",
+								"36–39",
+								"91–99"
+							],
+							[
+								"L",
+								"40–44",
+								"102–112"
+							]
+						],
+						"pick": 1
+					},
+					{
+						"type": "text",
+						"text": "The vest has adjustable side cords and a chest strap, so it fits over a size range. If she is between sizes, choose the smaller one for a bounce-free fit."
+					},
+					{
+						"type": "checklist",
+						"items": [
+							"Check the size of a sports bra or fitted running top in a recent order",
+							"Look at a tee she wears on runs: S–M tees usually mean size S",
+							"Ask a friend or training partner to confirm, without naming the gift",
+							"Order from a shop with free returns for 30 days, so an exchange costs nothing"
+						]
+					},
+					{
+						"type": "meta",
+						"text": "Measured around the fullest part of the chest, under the arms\nOrders include a free size exchange within 30 days"
+					}
+				],
+				"actions": [
+					{
+						"label": "Add a size exchange note",
+						"sublabel": "Gift receipt inside the box",
+						"icon": "gift",
+						"effect": "confirm",
+						"done": "Gift receipt added"
+					},
+					{
+						"label": "Compare other gifts",
+						"sublabel": "Skip sizing entirely",
+						"icon": "list",
+						"effect": "open",
+						"intent": "Gift ideas for a runner that need no sizing, under $120, such as the recovery kit and sock trio, with pros and cons"
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,62 @@
+{
+	"request": {
+		"mode": "section",
+		"intent": "Walking directions from home to Cafe Tilde, 48 Alder Street, arriving by 3:00 PM on Saturday",
+		"page": "Coffee with Mara",
+		"from": "Cafe Tilde → Get walking directions"
+	},
+	"assembly": {
+		"sections": [
+			{
+				"title": "Walk to Cafe Tilde",
+				"kicker": "Sat, Nov 7 · 12 min · 0.6 mi",
+				"blocks": [
+					{
+						"type": "text",
+						"text": "Leave by 2:45 PM to arrive a few minutes early and get settled before Mara. The route is flat and mostly along quiet streets."
+					},
+					{
+						"type": "list",
+						"numbered": true,
+						"rows": [
+							{
+								"label": "Head north on Willow Lane",
+								"sub": "Toward the corner with Fenn Avenue",
+								"trailing": "3 min"
+							},
+							{
+								"label": "Turn right on Fenn Avenue",
+								"sub": "Cross at the light by the bakery",
+								"trailing": "4 min"
+							},
+							{
+								"label": "Turn left on Alder Street",
+								"sub": "Continue past the bookshop on the left",
+								"trailing": "4 min"
+							},
+							{
+								"label": "Arrive at 48 Alder Street",
+								"sub": "Cafe Tilde, green door, window tables",
+								"trailing": "1 min"
+							}
+						]
+					},
+					{
+						"type": "meta",
+						"text": "Leave 2:45 PM · Arrive 2:57 PM\nSunny, 54°F at 3:00 PM"
+					}
+				],
+				"actions": [
+					{
+						"label": "Remind me to leave at 2:45",
+						"sublabel": "Saturday, Nov 7",
+						"icon": "bell",
+						"primary": true,
+						"effect": "confirm",
+						"done": "Reminder set for 2:45 PM"
+					}
+				]
+			}
+		]
+	}
+}

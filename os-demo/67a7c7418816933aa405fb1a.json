@@ -1,0 +1,72 @@
+{
+	"request": {
+		"mode": "section",
+		"intent": "Comparison table of three other places to stay in Lisbon for Nov 13 to Nov 16 with area, price per night and rating",
+		"page": "Lisbon Weekend",
+		"from": "Casa Miradouro → See other stays"
+	},
+	"assembly": {
+		"sections": [
+			{
+				"title": "Other stays in Lisbon",
+				"kicker": "Nov 13 to Nov 16 · 3 nights",
+				"blocks": [
+					{
+						"type": "text",
+						"text": "Casa Miradouro is $165 per night. Residência Graça Alta is the best value: $384 for three nights, $111 less."
+					},
+					{
+						"type": "table",
+						"columns": [
+							"Stay",
+							"Area",
+							"Per night",
+							"Rating"
+						],
+						"rows": [
+							[
+								"Residência Graça Alta",
+								"Graça",
+								"$128",
+								"4.5 / 5"
+							],
+							[
+								"Pensão Lumiar",
+								"Chiado",
+								"$142",
+								"4.6 / 5"
+							],
+							[
+								"Palácio Rosa 11",
+								"Príncipe Real",
+								"$214",
+								"4.8 / 5"
+							]
+						],
+						"pick": 0
+					},
+					{
+						"type": "meta",
+						"text": "Double rooms · breakfast included\nFree cancellation on all three until Nov 11"
+					}
+				],
+				"actions": [
+					{
+						"label": "Switch to Residência Graça Alta",
+						"sublabel": "3 nights · $384 total",
+						"icon": "bed",
+						"primary": true,
+						"effect": "confirm",
+						"done": "Stay switched to Graça Alta"
+					},
+					{
+						"label": "Show these stays on a map",
+						"icon": "map",
+						"effect": "open",
+						"intent": "Map of Residência Graça Alta, Pensão Lumiar and Palácio Rosa 11 in Lisbon, with Casa Miradouro for reference"
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,50 +1,36 @@
 import type { ErrorCode, HealthInfo } from '$lib/types';
-import type { ActionSpec, Assembly, AssemblyRequest, ModuleSpec } from './spec';
+import type { ActionSpec, Assembly, AssemblyRequest, SectionSpec } from './spec';
 
-/** What opened a module: an action clicked (or an intention typed) on another module. */
-export interface Via {
-	from: string;
-	action: string;
-}
-
-/** One slot in a flow — exactly one of: a module, a module being assembled, a failed assembly. */
-export type FlowItem =
-	| { key: string; status: 'ready'; module: ModuleSpec; via?: Via }
+/** One slot on a page — exactly one of: a section, a section being assembled, a failed assembly. */
+export type PageItem =
+	| { key: string; status: 'ready'; section: SectionSpec }
 	| { key: string; status: 'pending'; request: AssemblyRequest }
 	| { key: string; status: 'failed'; request: AssemblyRequest; code: ErrorCode; detail?: string };
 
-/** Everything one intention produced, plus the modules opened from it — one group in the band. */
-export interface Flow {
+/**
+ * Everything one intention put on the page, like a notebook cell. The first cell is the
+ * page itself; every follow-up typed on the page adds one below. Sections opened by an
+ * action go right below the section they came from, in the same cell.
+ */
+export interface Cell {
 	key: string;
 	intent: string;
-	items: FlowItem[];
+	items: PageItem[];
 }
 
+/** One Space = one live page for one task. */
 export interface Space {
 	key: string;
 	title: string;
 	intent: string;
-	flows: Flow[];
+	lede: string | null;
+	cells: Cell[];
 }
 
-/** Where "More actions" points the next Locus intention; null = a new flow in the space. */
-export interface LocusTarget {
-	flowKey: string;
-	itemKey: string;
-	title: string;
-}
-
-// v2: flows carry their intention and items what opened them; v1 spaces are not migrated.
-const STORAGE_KEY = 'mercury-os-prototype:spaces:v2';
+// v3: a space is a page of cells; v2 (flows of modules) is not migrated.
+const STORAGE_KEY = 'klementine-pages:spaces:v3';
 
 const newKey = () => crypto.randomUUID();
-
-/** What opened an item, for every status: kept on ready modules, read from the request otherwise. */
-export function viaOf(item: FlowItem): Via | undefined {
-	if (item.status === 'ready') return item.via;
-	const from = item.request.from;
-	return from ? { from: from.module.title, action: from.action } : undefined;
-}
 
 /** All client-side state of the OS — one instance per page, browser-only. */
 export class Os {
@@ -52,7 +38,6 @@ export class Os {
 	/** null = the empty state (Locus centred, ready for a new intention). */
 	activeKey = $state<string | null>(null);
 	health = $state<HealthInfo | null>(null);
-	target = $state<LocusTarget | null>(null);
 
 	active = $derived(this.spaces.find((s) => s.key === this.activeKey) ?? null);
 
@@ -80,116 +65,98 @@ export class Os {
 
 	// ------------------------------------------------------------ intentions
 
-	/** Locus from the empty state: a new space named after the intention. */
+	/** Locus from the empty state: a new page for the intention. */
 	newSpace(intent: string): void {
-		const pending = this.pendingItem({ mode: 'space', intent });
-		const space: Space = { key: newKey(), title: intent, intent, flows: [{ key: newKey(), intent, items: [pending] }] };
+		const pending = this.pendingItem({ mode: 'page', intent });
+		const cell: Cell = { key: newKey(), intent, items: [pending] };
+		const space: Space = { key: newKey(), title: intent, intent, lede: null, cells: [cell] };
 		this.spaces.push(space);
 		this.activeKey = space.key;
-		void this.run(space.key, space.flows[0].key, pending.key);
+		void this.run(space.key, cell.key, pending.key);
 	}
 
-	/** Locus inside a space: a new flow at the end of the band, or — with a target — one module after the target. */
+	/** Locus on a page: a follow-up, added as a new cell at the end of the page. */
 	addToSpace(intent: string): void {
 		const space = this.active;
 		if (!space) return this.newSpace(intent);
-
-		const target = this.target;
-		this.target = null;
-		if (target) {
-			const flow = space.flows.find((f) => f.key === target.flowKey);
-			const from = flow?.items.find((i) => i.key === target.itemKey);
-			if (flow && from?.status === 'ready') {
-				this.insertAfter(space, flow, from.key, { mode: 'module', intent, from: { module: from.module, action: intent } });
-				return;
-			}
-		}
-
-		const pending = this.pendingItem({ mode: 'flow', intent });
-		const flow: Flow = { key: newKey(), intent, items: [pending] };
-		space.flows.push(flow);
-		void this.run(space.key, flow.key, pending.key);
+		const pending = this.pendingItem({ mode: 'section', intent });
+		const cell: Cell = { key: newKey(), intent, items: [pending] };
+		space.cells.push(cell);
+		void this.run(space.key, cell.key, pending.key);
 	}
 
-	/** An "open" action: the next module appears right after the clicked one. */
-	open(flowKey: string, itemKey: string, action: ActionSpec): void {
+	/** An "open" action: the new section appears right below the clicked one. */
+	open(cellKey: string, itemKey: string, action: ActionSpec): void {
 		const space = this.active;
-		const flow = space?.flows.find((f) => f.key === flowKey);
-		const from = flow?.items.find((i) => i.key === itemKey);
-		if (!space || !flow || from?.status !== 'ready') return;
-		this.insertAfter(space, flow, itemKey, {
-			mode: 'module',
+		const cell = space?.cells.find((c) => c.key === cellKey);
+		const from = cell?.items.find((i) => i.key === itemKey);
+		if (!space || !cell || from?.status !== 'ready') return;
+		const pending = this.pendingItem({
+			mode: 'section',
 			intent: action.intent ?? action.label,
-			from: { module: from.module, action: action.label }
+			from: { section: from.section, action: action.label }
 		});
+		cell.items.splice(cell.items.indexOf(from) + 1, 0, pending);
+		void this.run(space.key, cell.key, pending.key);
 	}
 
-	retry(flowKey: string, itemKey: string): void {
+	retry(cellKey: string, itemKey: string): void {
 		const space = this.active;
-		const flow = space?.flows.find((f) => f.key === flowKey);
-		const idx = flow?.items.findIndex((i) => i.key === itemKey) ?? -1;
-		const item = flow?.items[idx];
-		if (!space || !flow || item?.status !== 'failed') return;
-		flow.items[idx] = { key: item.key, status: 'pending', request: item.request };
-		void this.run(space.key, flow.key, item.key);
+		const cell = space?.cells.find((c) => c.key === cellKey);
+		const idx = cell?.items.findIndex((i) => i.key === itemKey) ?? -1;
+		const item = cell?.items[idx];
+		if (!space || !cell || item?.status !== 'failed') return;
+		cell.items[idx] = { key: item.key, status: 'pending', request: item.request };
+		void this.run(space.key, cell.key, item.key);
 	}
 
-	/** Removes one item; an emptied flow disappears with it. */
-	dismiss(flowKey: string, itemKey: string): void {
+	/** Removes one item; an emptied cell disappears with it. */
+	dismiss(cellKey: string, itemKey: string): void {
 		const space = this.active;
-		const flow = space?.flows.find((f) => f.key === flowKey);
-		if (!space || !flow) return;
-		flow.items = flow.items.filter((i) => i.key !== itemKey);
-		if (flow.items.length === 0) space.flows = space.flows.filter((f) => f.key !== flowKey);
-		if (this.target?.itemKey === itemKey) this.target = null;
+		const cell = space?.cells.find((c) => c.key === cellKey);
+		if (!space || !cell) return;
+		cell.items = cell.items.filter((i) => i.key !== itemKey);
+		if (cell.items.length === 0) space.cells = space.cells.filter((c) => c.key !== cellKey);
 		this.persist();
 	}
 
 	closeSpace(key: string): void {
 		this.spaces = this.spaces.filter((s) => s.key !== key);
 		if (this.activeKey === key) this.activeKey = this.spaces.at(-1)?.key ?? null;
-		this.target = null;
 		this.persist();
 	}
 
-	/** True while any module of the active space is being assembled. */
+	/** True while any section of the active page is being assembled. */
 	get busy(): boolean {
-		return this.active?.flows.some((f) => f.items.some((i) => i.status === 'pending')) ?? false;
+		return this.active?.cells.some((c) => c.items.some((i) => i.status === 'pending')) ?? false;
 	}
 
 	// -------------------------------------------------------------- internals
 
-	private pendingItem(request: AssemblyRequest): FlowItem {
-		const item: FlowItem = { key: newKey(), status: 'pending', request };
+	private pendingItem(request: AssemblyRequest): PageItem {
+		const item: PageItem = { key: newKey(), status: 'pending', request };
 		this.fresh.add(item.key);
 		return item;
 	}
 
-	private insertAfter(space: Space, flow: Flow, itemKey: string, request: AssemblyRequest): void {
-		const pending = this.pendingItem(request);
-		const idx = flow.items.findIndex((i) => i.key === itemKey);
-		flow.items.splice(idx + 1, 0, pending);
-		void this.run(space.key, flow.key, pending.key);
+	/** Sections already on the page — context that keeps new ones consistent. */
+	private readySections(space: Space): SectionSpec[] {
+		return space.cells.flatMap((c) => c.items.flatMap((i) => (i.status === 'ready' ? [i.section] : [])));
 	}
 
-	/** Modules already on screen in a space — context that keeps new ones consistent. */
-	private readyModules(space: Space): ModuleSpec[] {
-		return space.flows.flatMap((f) => f.items.flatMap((i) => (i.status === 'ready' ? [i.module] : [])));
-	}
-
-	private async run(spaceKey: string, flowKey: string, itemKey: string): Promise<void> {
+	private async run(spaceKey: string, cellKey: string, itemKey: string): Promise<void> {
 		const findItem = () => {
 			const space = this.spaces.find((s) => s.key === spaceKey);
-			const flow = space?.flows.find((f) => f.key === flowKey);
-			const idx = flow?.items.findIndex((i) => i.key === itemKey) ?? -1;
-			return space && flow && idx !== -1 ? { space, flow, idx, item: flow.items[idx] } : null;
+			const cell = space?.cells.find((c) => c.key === cellKey);
+			const idx = cell?.items.findIndex((i) => i.key === itemKey) ?? -1;
+			return space && cell && idx !== -1 ? { space, cell, idx, item: cell.items[idx] } : null;
 		};
 
 		const start = findItem();
 		if (!start || start.item.status !== 'pending') return;
 		const request: AssemblyRequest = {
 			...start.item.request,
-			space: { title: start.space.title, modules: this.readyModules(start.space) }
+			page: { title: start.space.title, sections: this.readySections(start.space) }
 		};
 
 		let assembly: Assembly | null = null;
@@ -207,40 +174,36 @@ export class Os {
 			failure = { code: 'network_error' };
 		}
 
-		// The space, flow or item may have been closed while we waited.
+		// The page, cell or item may have been closed while we waited.
 		const now = findItem();
 		if (!now || now.item.status !== 'pending') return;
 
 		if (failure || !assembly) {
-			now.flow.items[now.idx] = { key: itemKey, status: 'failed', request: now.item.request, ...failure! };
+			now.cell.items[now.idx] = { key: itemKey, status: 'failed', request: now.item.request, ...failure! };
 			return;
 		}
 
-		const via = viaOf(now.item);
-		const toItems = (modules: ModuleSpec[]): FlowItem[] =>
-			modules.map((module) => {
-				// Re-key: replayed recordings reuse module ids.
-				const item: FlowItem = { key: newKey(), status: 'ready', module: { ...module, id: newKey() }, via };
-				this.fresh.add(item.key);
-				return item;
-			});
-
-		// module: one module in place of the slot. space / flow: every module of the intention,
-		// in this one flow — the model may group them into several, the band shows one group.
-		const modules = assembly.flows.flat();
-		const mode = now.item.request.mode;
-		now.flow.items.splice(now.idx, 1, ...toItems(mode === 'module' ? modules.slice(0, 1) : modules));
-		if (mode === 'space' && assembly.title) now.space.title = assembly.title;
+		const items = assembly.sections.map((section): PageItem => {
+			// Re-key: replayed recordings reuse section ids.
+			const item: PageItem = { key: newKey(), status: 'ready', section: { ...section, id: newKey() } };
+			this.fresh.add(item.key);
+			return item;
+		});
+		now.cell.items.splice(now.idx, 1, ...items);
+		if (now.item.request.mode === 'page') {
+			if (assembly.title) now.space.title = assembly.title;
+			now.space.lede = assembly.lede;
+		}
 		this.persist();
 	}
 
-	/** Saves ready modules only — pending and failed slots are session-local. */
+	/** Saves ready sections only — pending and failed slots are session-local. */
 	private persist(): void {
 		const snapshot = this.spaces.map((s) => ({
 			...s,
-			flows: s.flows
-				.map((f) => ({ ...f, items: f.items.filter((i) => i.status === 'ready') }))
-				.filter((f) => f.items.length > 0)
+			cells: s.cells
+				.map((c) => ({ ...c, items: c.items.filter((i) => i.status === 'ready') }))
+				.filter((c) => c.items.length > 0)
 		}));
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));

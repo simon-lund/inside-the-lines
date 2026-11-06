@@ -1,0 +1,180 @@
+{
+	"request": {
+		"mode": "page",
+		"intent": "Find a birthday gift for my sister who runs",
+		"page": "Find a birthday gift for my sister who runs",
+		"from": null
+	},
+	"assembly": {
+		"title": "Gift for a Runner",
+		"lede": "Three well-reviewed gift ideas for your sister, with a pick that fits most budgets and a plan to get it there before her birthday.",
+		"sections": [
+			{
+				"title": "Top pick: Tempo Trail Vest",
+				"kicker": "Best overall · Stridewell",
+				"blocks": [
+					{
+						"type": "art",
+						"art": {
+							"kind": "product",
+							"tone": "green"
+						}
+					},
+					{
+						"type": "text",
+						"text": "A lightweight 8-liter running vest with two soft flasks, quick-reach pockets and a bounce-free fit. Useful for long weekend runs, and easy to size."
+					},
+					{
+						"type": "price",
+						"text": "$89"
+					},
+					{
+						"type": "meta",
+						"text": "Sizes XS–L · Ships in 2 days\nFree returns for 30 days"
+					}
+				],
+				"actions": [
+					{
+						"label": "Order the Tempo Vest",
+						"sublabel": "Arrives by Wed, Nov 11",
+						"icon": "cart",
+						"primary": true,
+						"effect": "confirm",
+						"done": "Order placed"
+					},
+					{
+						"label": "See sizing guide",
+						"icon": "list",
+						"effect": "open",
+						"intent": "Sizing guide for the Stridewell Tempo Trail Vest, with chest measurements and how to find her size without asking"
+					}
+				]
+			},
+			{
+				"title": "Compare three ideas",
+				"kicker": "Under $120",
+				"blocks": [
+					{
+						"type": "table",
+						"columns": [
+							"Gift",
+							"Price",
+							"Why it works"
+						],
+						"rows": [
+							[
+								"Tempo Trail Vest",
+								"$89",
+								"Long runs, practical"
+							],
+							[
+								"Pulse Loop watch band + case",
+								"$45",
+								"Small, safe, quick to ship"
+							],
+							[
+								"Recovery kit from Kinfold",
+								"$68",
+								"Foam roller, balm, massage ball"
+							],
+							[
+								"Race-day sock trio, Hollis",
+								"$34",
+								"Low risk, easy add-on"
+							]
+						],
+						"pick": 0
+					},
+					{
+						"type": "text",
+						"text": "If you don't know her gear, the recovery kit is the safest choice. Nobody has too much of it."
+					}
+				],
+				"actions": [
+					{
+						"label": "Show more under $50",
+						"icon": "search",
+						"effect": "open",
+						"intent": "Four more runner gift ideas under $50, in a table with price and why it works"
+					},
+					{
+						"label": "Show a splurge option",
+						"icon": "star",
+						"effect": "open",
+						"intent": "One splurge gift for a runner around $250, with details and why it is worth it"
+					}
+				]
+			},
+			{
+				"title": "Before you buy",
+				"kicker": "Quick checks",
+				"blocks": [
+					{
+						"type": "checklist",
+						"items": [
+							"Check her shoe and shirt size from a recent order",
+							"Ask a friend what she already owns",
+							"Confirm her birthday date and delivery address",
+							"Add a handwritten card"
+						]
+					}
+				],
+				"actions": [
+					{
+						"label": "Remind me tomorrow at 10",
+						"icon": "bell",
+						"effect": "confirm",
+						"done": "Reminder set for Sat, 10:00"
+					}
+				]
+			},
+			{
+				"title": "Cost and delivery",
+				"kicker": "With the Tempo Vest",
+				"blocks": [
+					{
+						"type": "summary",
+						"rows": [
+							{
+								"label": "Tempo Trail Vest",
+								"value": "$89.00"
+							},
+							{
+								"label": "Gift wrap and card",
+								"value": "$6.00"
+							},
+							{
+								"label": "Shipping (2-day)",
+								"value": "$0.00"
+							}
+						],
+						"total": {
+							"label": "Total",
+							"value": "$95.00"
+						}
+					},
+					{
+						"type": "meta",
+						"text": "Arrives Wed, Nov 11\nShip to her address or yours"
+					}
+				],
+				"actions": [
+					{
+						"label": "Ship directly to her",
+						"sublabel": "Adds a gift note",
+						"icon": "gift",
+						"primary": true,
+						"effect": "open",
+						"intent": "Delivery form to ship the Tempo Trail Vest straight to the sister with a short gift note and hidden prices"
+					},
+					{
+						"label": "Add birthday to calendar",
+						"icon": "calendar",
+						"effect": "confirm",
+						"done": "Added to calendar"
+					}
+				]
+			}
+		]
+	}
+}

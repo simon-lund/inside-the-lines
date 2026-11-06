@@ -10,8 +10,7 @@ export const GET: RequestHandler = () => {
 		hasApiKey: cfg !== null,
 		provider,
 		keyVar: PROVIDERS[provider].keyVar,
-		model: cfg?.model ?? PROVIDERS[provider].model,
-		fastModel: cfg?.fastModel ?? PROVIDERS[provider].fastModel
+		model: cfg?.model ?? PROVIDERS[provider].model
 	};
 	return json(info);
 };

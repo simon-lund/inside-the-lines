@@ -1,16 +1,13 @@
 /**
- * The module spec: the only thing the OS model is allowed to produce.
+ * The page spec: the only thing the model is allowed to produce.
  *
- * The studio lets the model write Svelte and checks the result afterwards. The OS
- * goes one step further — the model only fills in this vocabulary, and fixed
- * design-system components render it. Anything outside the vocabulary is dropped
- * by `sanitize.ts` before it reaches the screen, so an off-design module cannot exist.
+ * A Space is one live page for one task. The model never writes UI — it fills in
+ * this vocabulary (a title, then sections made of blocks and actions), and fixed
+ * design-system components draw it. Anything outside the vocabulary is dropped by
+ * `sanitize.ts` before it reaches the screen, so an off-design page cannot exist.
  */
 
-export const KINDS = ['location', 'social', 'music', 'shop', 'generic'] as const;
-export type Kind = (typeof KINDS)[number];
-
-/** Glyph names the model may use; each maps to one lucide icon (see os/icons.ts). */
+/** Glyph names the model may use on actions; each maps to one Phosphor icon (see os/icons.ts). */
 export const ICONS = [
 	'generic',
 	'location',
@@ -72,7 +69,7 @@ export interface ArtSpec {
 
 /**
  * What a click does — exactly one of:
- * - open: the model assembles the next module, placed right after this one in the flow
+ * - open: the model assembles a new section, placed right below this one
  * - confirm: an instant local state change ("Add to calendar" → "Added")
  */
 export type ActionEffect = 'open' | 'confirm';
@@ -83,7 +80,7 @@ export interface ActionSpec {
 	icon?: IconName;
 	primary?: boolean;
 	effect: ActionEffect;
-	/** open: what the next module should be about, in the user's words. */
+	/** open: what the new section should show, in the user's words. */
 	intent?: string;
 	/** confirm: the label after the click. */
 	done?: string;
@@ -95,68 +92,107 @@ export interface ListRowSpec {
 	trailing?: string;
 }
 
-export const TEXT_ROLES = ['kicker', 'title', 'text', 'meta', 'price'] as const;
+export interface PlaceSpec {
+	label: string;
+	sublabel?: string;
+}
+
+export interface SummaryRowSpec {
+	label: string;
+	value: string;
+}
+
+export const TEXT_ROLES = ['text', 'meta', 'price'] as const;
 export type TextRole = (typeof TEXT_ROLES)[number];
 
 export type Block =
 	| { type: TextRole; text: string }
-	/** Stylised map; only valid as the first block. */
-	| { type: 'map'; label: string; sublabel?: string }
+	/** Stylised map with one pin per place; at most one per section. */
+	| { type: 'map'; places: PlaceSpec[] }
 	| { type: 'media'; title: string; subtitle?: string; art: ArtSpec; actions: ActionSpec[] }
 	| { type: 'art'; art: ArtSpec }
 	| { type: 'list'; numbered: boolean; rows: ListRowSpec[] }
-	/** from: 'me' for outgoing, otherwise the sender's initials. */
-	| { type: 'message'; text: string; time?: string; from: string }
-	| { type: 'divider'; label: string }
-	/** Reply bar; only valid as the last block. */
-	| { type: 'reply'; placeholder: string };
+	/** Options side by side; every row has one cell per column. `pick` marks the recommended row. */
+	| { type: 'table'; columns: string[]; rows: string[][]; pick?: number }
+	/** Label/value lines with an optional total — costs, key facts. */
+	| { type: 'summary'; rows: SummaryRowSpec[]; total?: SummaryRowSpec }
+	/** To-dos the person ticks off on the page. */
+	| { type: 'checklist'; items: string[] };
 
-export interface ModuleSpec {
+export type BlockType = Block['type'];
+
+// `satisfies` makes this fail to compile when a block type is added to `Block` but not here.
+const BLOCK_TYPE_SET = {
+	text: true,
+	meta: true,
+	price: true,
+	map: true,
+	media: true,
+	art: true,
+	list: true,
+	table: true,
+	summary: true,
+	checklist: true
+} as const satisfies Record<BlockType, true>;
+
+/** Every block type, e.g. for the Library, which shows each one. */
+export const BLOCK_TYPES = Object.keys(BLOCK_TYPE_SET) as BlockType[];
+
+export interface SectionSpec {
 	id: string;
+	/** The section's heading — the thing's name, not a sentence. */
 	title: string;
-	source: string;
-	kind: Kind;
-	icon?: IconName;
+	/** Small line above the heading: category, source, date. */
+	kicker?: string;
 	blocks: Block[];
 	actions: ActionSpec[];
 }
 
-/** A space's flows as the model returns them; the client wraps them in its own state. */
+/** What the model returns; the client wraps the sections in its own state. */
 export interface Assembly {
-	/** Name of the space (only for mode 'space'). */
+	/** Page name and one-sentence lede (mode 'page' only). */
 	title: string | null;
-	flows: ModuleSpec[][];
+	lede: string | null;
+	sections: SectionSpec[];
 }
 
 /**
- * Where the requested modules go — exactly one of:
- * - space: a new intention from the empty state → new space, 1–2 flows
- * - flow: an intention typed inside a space → one new flow
- * - module: an action clicked on a module → one module after it in the same flow
+ * What is being assembled — exactly one of:
+ * - page: a new intention from the empty state → a new page
+ * - section: a follow-up typed on the page, or an "open" action clicked → new section(s);
+ *   with `from` they go right below that section, without it at the end of the page
  */
-export type AssemblyMode = 'space' | 'flow' | 'module';
+export type AssemblyMode = 'page' | 'section';
 
 export interface AssemblyRequest {
 	mode: AssemblyMode;
 	intent: string;
-	/** Context so new modules stay consistent with what is already on screen. */
-	space?: { title: string; modules: ModuleSpec[] };
-	/** mode 'module': the module and action that were clicked. */
-	from?: { module: ModuleSpec; action: string };
+	/** Context so new sections stay consistent with what is already on the page. */
+	page?: { title: string; sections: SectionSpec[] };
+	/** The section and action that were clicked. */
+	from?: { section: SectionSpec; action: string };
 }
 
 export const LIMITS = {
-	flowsPerSpace: 2,
-	modulesPerFlow: 3,
-	blocksPerModule: 8,
-	actionsPerModule: 4,
+	sectionsPerPage: 6,
+	sectionsPerFollowUp: 2,
+	blocksPerSection: 6,
+	actionsPerSection: 3,
 	actionsPerMedia: 2,
 	rowsPerList: 6,
+	placesPerMap: 4,
+	tableColumns: 4,
+	tableRows: 6,
+	summaryRows: 6,
+	checklistItems: 8,
+	checklistItem: 80,
 	title: 60,
-	source: 40,
+	kicker: 40,
+	lede: 160,
 	text: 280,
-	label: 28,
+	label: 36,
 	sublabel: 40,
+	cell: 48,
 	intent: 200,
 	initials: 3
 } as const;

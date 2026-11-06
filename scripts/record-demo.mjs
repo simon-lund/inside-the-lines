@@ -1,13 +1,13 @@
-// Records the example spaces through the real app, so every recording is keyed by
+// Records the example pages through the real app, so every recording is keyed by
 // exactly what a click sends. Results land in .os-cache/; review them, then copy them
 // into os-demo/ to ship them.
 //
 //   npm run dev -- --port 5199     # with an API key in .env
 //   npm run record
 //
-// Each example intention, plus up to two "open" actions per space: the first one in
-// the space (the README's "open action" screenshot replays it) and one on another
-// module. Re-running replays what is already cached and only spends calls on the rest.
+// Each example intention, plus up to two "open" actions per page: the first one on the
+// page (the README's "open action" screenshot replays it) and one in another section.
+// Re-running replays what is already cached and only spends calls on the rest.
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:5199';
@@ -18,11 +18,11 @@ async function settled(page) {
 	await sleep(500);
 }
 
-// Failed slots in the active space, as "code: detail" lines.
+// Failed sections on the active page, as "code: detail" lines.
 const failures = (page) =>
 	page.evaluate(() =>
-		(window.__os.active?.flows ?? [])
-			.flatMap((f) => f.items)
+		(window.__os.active?.cells ?? [])
+			.flatMap((c) => c.items)
 			.filter((i) => i.status === 'failed')
 			.map((i) => `${i.code}: ${i.detail ?? ''}`)
 	);
@@ -47,25 +47,25 @@ try {
 	for (const intent of intents) {
 		await page.evaluate((i) => window.__os.newSpace(i), intent);
 		await settled(page);
-		console.log(`space  ${intent}`);
+		console.log(`page  ${intent}`);
 
-		// First open action in the space, then the first one on a different module.
+		// First open action on the page, then the first one in a different section.
 		const picks = await page.evaluate(() => {
 			const out = [];
-			for (const flow of window.__os.active?.flows ?? []) {
-				for (const item of flow.items) {
-					if (item.status !== 'ready' || out.some((p) => p.itemKey === item.key)) continue;
-					const action = item.module.actions.find((a) => a.effect === 'open');
-					if (action && out.length < 2) out.push({ flowKey: flow.key, itemKey: item.key, title: item.module.title, label: action.label });
+			for (const cell of window.__os.active?.cells ?? []) {
+				for (const item of cell.items) {
+					if (item.status !== 'ready' || out.length >= 2) continue;
+					const action = item.section.actions.find((a) => a.effect === 'open');
+					if (action) out.push({ cellKey: cell.key, itemKey: item.key, title: item.section.title, label: action.label });
 				}
 			}
 			return out;
 		});
 		for (const pick of picks) {
-			await page.evaluate(({ flowKey, itemKey, label }) => {
+			await page.evaluate(({ cellKey, itemKey, label }) => {
 				const os = window.__os;
-				const item = os.active.flows.find((f) => f.key === flowKey).items.find((i) => i.key === itemKey);
-				os.open(flowKey, itemKey, item.module.actions.find((a) => a.label === label));
+				const item = os.active.cells.find((c) => c.key === cellKey).items.find((i) => i.key === itemKey);
+				os.open(cellKey, itemKey, item.section.actions.find((a) => a.label === label));
 			}, pick);
 			await settled(page);
 			console.log(`  open ${pick.title} → ${pick.label}`);

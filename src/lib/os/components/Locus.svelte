@@ -1,26 +1,24 @@
 <script lang="ts">
-	import ArrowUp from '@lucide/svelte/icons/arrow-up';
-	import CornerDownRight from '@lucide/svelte/icons/corner-down-right';
-	import Sparkles from '@lucide/svelte/icons/sparkles';
-	import X from '@lucide/svelte/icons/x';
+	import ArrowUp from 'phosphor-svelte/lib/ArrowUp';
+	import KlementineFace from './KlementineFace.svelte';
 	import type { Os } from '$lib/os/os.svelte';
 
 	/**
-	 * Locus — where intentions are typed. Centred on the empty state, docked at the
-	 * bottom inside a space. ⌘K / Ctrl+K focuses it from anywhere.
+	 * Locus — where intentions are typed, with Klementine's face looking on. Centred on the empty
+	 * state, docked at the bottom of a page, where it adds a follow-up. ⌘K / Ctrl+K focuses it.
 	 */
 	let { os, docked }: { os: Os; docked: boolean } = $props();
 
 	let value = $state('');
+	let focused = $state(false);
 	let inputEl = $state<HTMLInputElement | null>(null);
 
-	const placeholder = $derived(
-		os.target
-			? `What should open next to ${os.target.title}?`
-			: docked
-				? 'Add to this space…'
-				: 'What would you like to do?'
-	);
+	const placeholder = $derived(docked ? 'Anything else?' : 'What’s on your mind?');
+
+	// Her look, exactly one: working while a section is assembled, needing you when one failed,
+	// listening while you type, otherwise idle.
+	const failed = $derived(os.active?.cells.some((c) => c.items.some((i) => i.status === 'failed')) ?? false);
+	const look = $derived(os.busy ? 'working' : failed ? 'needs' : focused || value ? 'listening' : 'idle');
 
 	function submit(event: SubmitEvent) {
 		event.preventDefault();
@@ -35,131 +33,101 @@
 		if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
 			event.preventDefault();
 			inputEl?.focus();
-		} else if (event.key === 'Escape' && os.target) {
-			os.target = null;
 		}
 	}
-
-	// "More actions" on a module points Locus at it — focus the field.
-	$effect(() => {
-		if (os.target) inputEl?.focus();
-	});
 </script>
 
 <svelte:window onkeydown={onWindowKeydown} />
 
 <form class="locus" class:docked onsubmit={submit}>
-	{#if os.target}
-		<span class="target">
-			<CornerDownRight size={13} aria-hidden="true" />
-			{os.target.title}
-			<button type="button" aria-label="Stop targeting {os.target.title}" onclick={() => (os.target = null)}>
-				<X size={12} aria-hidden="true" />
-			</button>
-		</span>
-	{:else}
-		<Sparkles class="glyph" size={docked ? 16 : 20} strokeWidth={1.8} aria-hidden="true" />
-	{/if}
-	<input bind:this={inputEl} bind:value {placeholder} aria-label="Intention" autocomplete="off" />
-	<kbd aria-hidden="true">⌘K</kbd>
+	<KlementineFace {look} size={docked ? 34 : 40} />
+	<input
+		bind:this={inputEl}
+		bind:value
+		{placeholder}
+		aria-label="Intention"
+		autocomplete="off"
+		onfocus={() => (focused = true)}
+		onblur={() => (focused = false)}
+	/>
 	<button type="submit" class="send" disabled={!value.trim()} aria-label="Assemble">
-		<ArrowUp size={16} strokeWidth={2.4} aria-hidden="true" />
+		<ArrowUp size={18} weight="bold" aria-hidden="true" />
 	</button>
 </form>
 
 <style>
+	/* The composer: a 28px-round field on the layer surface, the send key inside it. */
 	.locus {
 		display: flex;
 		align-items: center;
 		gap: 12px;
 		width: min(640px, 100%);
-		padding: 10px 10px 10px 20px;
-		border-radius: 999px;
-		background: var(--m-card);
-		box-shadow: var(--m-shadow);
+		padding: 8px 8px 8px 10px;
+		border-radius: var(--m-radius-xl);
+		background: var(--m-layer);
+		box-shadow: var(--m-shadow-line);
 		font-family: var(--m-font);
+		transition: box-shadow var(--m-dur-quick) var(--m-ease-settle);
 	}
+	/* Docked over the page, it floats: the only thing here with a shadow. */
 	.locus.docked {
-		width: min(560px, calc(100vw - 32px));
-		padding: 7px 7px 7px 16px;
+		width: min(600px, calc(100vw - 32px));
+		padding: 6px 6px 6px 8px;
+		box-shadow: var(--m-shadow-float);
 	}
-	.locus :global(.glyph) {
-		flex-shrink: 0;
-		color: var(--m-accent);
+	/* Focus: a 1px edge in the accent and a soft halo, as Klementine's fields. */
+	.locus:focus-within {
+		box-shadow:
+			inset 0 0 0 1px var(--m-accent),
+			0 0 0 3px var(--m-focus-halo);
+	}
+	.locus.docked:focus-within {
+		box-shadow:
+			inset 0 0 0 1px var(--m-accent),
+			0 0 0 3px var(--m-focus-halo),
+			var(--m-shadow-float);
+	}
+	.locus :global(input:focus-visible) {
+		outline: none;
 	}
 	input {
 		flex: 1;
 		min-width: 0;
-		border: none;
-		outline: none;
+		height: 44px;
 		background: none;
-		font: inherit;
-		font-size: 18px;
-		color: var(--m-text);
-	}
-	.docked input {
-		font-size: 15px;
+		font-size: var(--m-type-title);
+		color: var(--m-ink);
 	}
 	input::placeholder {
-		color: var(--m-faint);
+		color: var(--m-ink-3);
 	}
-	kbd {
-		font: inherit;
-		font-size: 11px;
-		color: var(--m-faint);
-		border: 1px solid var(--m-border);
-		border-radius: 6px;
-		padding: 2px 6px;
-	}
-	.target {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		flex-shrink: 0;
-		max-width: 45%;
-		padding: 5px 6px 5px 10px;
-		border-radius: 999px;
-		background: var(--m-pill);
-		font-size: 12.5px;
-		font-weight: 500;
-		color: var(--m-text);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	.target button {
-		display: inline-grid;
-		place-items: center;
-		border: none;
-		background: none;
-		padding: 2px;
-		color: var(--m-muted);
-		cursor: pointer;
-	}
+	/* The send key: the accent, on its own. */
 	.send {
 		display: grid;
 		place-items: center;
 		flex-shrink: 0;
-		width: 38px;
-		height: 38px;
-		border: none;
+		width: 44px;
+		height: 44px;
 		border-radius: 50%;
-		background: var(--m-text);
-		color: var(--m-card);
+		background: var(--m-accent);
+		color: var(--m-accent-ink);
+		box-shadow: var(--m-shadow-key);
 		cursor: pointer;
-		transition: opacity 150ms ease;
+		transition:
+			opacity var(--m-dur-quick) var(--m-ease-settle),
+			scale var(--m-dur-quick) var(--m-ease-settle);
 	}
-	.docked .send {
-		width: 34px;
-		height: 34px;
+	.send:active:not(:disabled) {
+		scale: 0.97;
+		transition-duration: var(--m-dur-press);
 	}
 	.send:disabled {
 		opacity: 0.25;
 		cursor: default;
 	}
-	@media (max-width: 640px) {
-		kbd {
-			display: none;
+	@media (prefers-reduced-motion: reduce) {
+		.send:active:not(:disabled) {
+			scale: none;
 		}
 	}
 </style>
