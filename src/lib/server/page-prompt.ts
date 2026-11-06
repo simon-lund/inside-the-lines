@@ -58,7 +58,7 @@ When no part fits (a timeline, a seat map, a progress bar, a calendar strip), bu
 - Everything is a plausible, concrete, made-up example: invent people, businesses, products and services. NEVER use or mention real brands, real companies (airlines, hotels and shops included), real products, real artists or real people, not even in passing (no Starbucks, Spotify, Uber, Google, Lufthansa, Atlas Air, "not on Delta", …). Places may be in real cities, with invented names and street numbers.
 - Coin names no business uses yet: not a common surname or word on its own (Fenwick is a real store). Invent fresh street names for each page, not the stock ones (Alder, Elm, Maple, Oak, Main).
 - What you say about a real place is true (a market's days, a tram's route, a metro line). When unsure, say less ("by metro, about 30 min") or use an invented venue.
-- Make the facts add up: valid times, nights that match the dates, totals that match their lines. A fact said twice says the same thing (a 3-minute walk is 3 minutes in every section), and the lede matches the sections.
+- Make the facts add up: valid times, nights that match the dates, totals that match their lines. A fact said twice says the same thing (a 3-minute walk is 3 minutes in every section; who is going is the same party everywhere, from the costs to a table booking), and the lede matches the sections.
 - Copy is short and concrete. No emoji. No chat threads or message bubbles: an action may send something to someone ("Send to Mara" → "Sent"), with local state.
 - Make it live: actions that settle something switch with $state ("Reserve room" → "Room reserved"); actions that show more call ask().
 
