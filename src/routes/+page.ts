@@ -1,2 +1,2 @@
-// The OS keeps its spaces in localStorage and animates on the client — no SSR needed.
+// Pages live in localStorage and run in the browser's REPL: no SSR needed.
 export const ssr = false;

@@ -1,9 +1,15 @@
 import type { ApiChatMessage, ProviderErrorCode } from '$lib/types';
 
-export interface JsonRequest {
+/** Provider-neutral stream events; the page route re-emits them as SSE. */
+export type TextEvent =
+	| { type: 'thinking' }
+	| { type: 'text'; text: string }
+	/** stopReason is normalized: 'end_turn' | 'max_tokens' | 'refusal' | other provider values. */
+	| { type: 'done'; stopReason: string | null };
+
+export interface TextRequest {
 	system: string;
 	messages: ApiChatMessage[];
-	maxTokens: number;
 	signal?: AbortSignal;
 }
 

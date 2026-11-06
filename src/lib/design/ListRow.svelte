@@ -1,15 +1,16 @@
 <script>
 	/**
 	 * A numbered or plain row in a list (steps, a day plan, tracks). A trailing time ("9:30 AM",
-	 * "14:00") is a word that says when, so it takes the clementine ink.
+	 * "14:00") is a word that says when, so it takes the clementine ink. `current` marks the row
+	 * that is chosen or open.
 	 */
-	/** @type {{ index?: string | number, label: string, sub?: string, trailing?: string, onclick?: (event: MouseEvent) => void }} */
-	let { index = '', label, sub = '', trailing = '', onclick } = $props();
+	/** @type {{ index?: string | number, label: string, sub?: string, trailing?: string, current?: boolean, onclick?: (event: MouseEvent) => void }} */
+	let { index = '', label, sub = '', trailing = '', current = false, onclick } = $props();
 
 	const isWhen = $derived(/^\d{1,2}(:\d{2})?\s?(am|pm)?$/i.test(trailing.trim()) && /[:apm]/i.test(trailing));
 </script>
 
-<button type="button" class="m-row" onclick={onclick}>
+<button type="button" class="m-row" class:current aria-current={current || undefined} {onclick}>
 	{#if index !== ''}<span class="m-row-index">{index}</span>{/if}
 	<span class="m-row-main">
 		<span class="m-row-label">{label}</span>
@@ -52,6 +53,10 @@
 	}
 	.m-row-label {
 		font-weight: 500;
+	}
+	.m-row.current .m-row-label {
+		font-weight: 600;
+		color: var(--m-clementine-ink);
 	}
 	.m-row-sub,
 	.m-row-trailing {

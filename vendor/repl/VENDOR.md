@@ -1,0 +1,14 @@
+Vendored from https://github.com/sveltejs/svelte.dev packages/repl
+commit 3817d6ed3ad5cadfc3f50224459424225b791cb4 (2026-09-05).
+
+License: MIT, as declared in the package's own package.json (kept in this folder).
+The upstream repository ships no separate LICENSE file; copyright remains with the
+Svelte contributors.
+
+Local changes:
+- package.json: removed scripts, devDependencies, files, and the workspace-protocol deps @sveltejs/site-kit + icons.
+- src/lib/vendored-site-kit/: copied site-kit codemirror + polyfills modules (same repo/commit).
+- Workspace.svelte.ts + workers/*/index.ts: site-kit imports point at the vendored copies.
+- Editor/codemirror.css: fold/close icon url(icons/…) refs inlined as data URIs (icons pkg not vendored).
+- Pruned unused UI needing site-kit/icons: Repl.svelte, index.ts (+ \".\" export), Input/, Output/{Output,AstView,AstNode,CompilerOptions}.svelte, and the package's own src/routes dev app.
+- Added vendored-site-kit/codemirror/index.d.ts (local type declarations).

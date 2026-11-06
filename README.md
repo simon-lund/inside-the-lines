@@ -1,10 +1,10 @@
 # Inside the Lines
 
-**Say what you're planning, and an AI model builds a live page for it on the spot: the places, the times, the costs and the next steps. It never writes UI, so the page can't leave the design system.**
+**Say what you're planning, and an AI model writes a live page for it on the spot: real Svelte code, running in your browser. A design check reads that code and keeps it inside the lines of one design system.**
 
-An experiment in generative UI: no apps, no folders, one page per task, made on the spot. It wears [Klementine](https://klementine.net)'s design, voice and face. All people, places and products in the examples are made up.
+An experiment in generative UI: no apps, no folders, one page per task, written on the spot. It wears [Klementine](https://klementine.net)'s design, voice and face. All people, places and products in the examples are made up.
 
-![A page built from "Plan a weekend in Lisbon"](docs/screenshots/os-hero.png)
+![A page written for "Plan a weekend in Lisbon"](docs/screenshots/hero.png)
 
 ## Try it
 
@@ -15,78 +15,88 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. The four examples are recorded and work **without an API key**. For anything else, copy `.env.example` to `.env` and set one key:
+Open http://localhost:5173. The four examples are recorded and work **without an API key**, and so does the first button you press on each. For anything else, copy `.env.example` to `.env` and set one key:
 
 | Provider | Key | Default model (`AI_MODEL`) |
 |---|---|---|
-| Anthropic | `ANTHROPIC_API_KEY` | `claude-sonnet-5-5` |
-| OpenAI | `OPENAI_API_KEY` | `gpt-6-luna` |
-| Mistral | `MISTRAL_API_KEY` | `mistral-small-latest` |
+| Anthropic | `ANTHROPIC_API_KEY` | `claude-opus-5-5` |
+| OpenAI | `OPENAI_API_KEY` | `gpt-6-astra` |
+| Mistral | `MISTRAL_API_KEY` | `mistral-large-latest` |
 
-With several keys set, `AI_PROVIDER` picks one.
+With several keys set, `AI_PROVIDER` picks one. A page takes 20 to 60 seconds to write. Pages compile in the Svelte REPL, which loads the compiler from a CDN, so even the recordings need a network connection.
 
 ## What you can do
 
-- **Say what you're planning:** *"Plan a weekend in Lisbon"*. A page opens with a title, one sentence that sums up the plan, and the sections it needs.
-- **Click an action.** An action that shows more (*Choose seats*, *See other stays*) builds a new section right below the one you clicked. One that settles something (*Reserve room*, *Add to calendar*) switches on the spot.
-- **Ask for more.** *Anything else?* at the bottom adds a part to the page, under what you typed.
-- **Tick things off, remove sections, keep several pages.** Pages stay in your browser.
-- **See everything she can build** in the Library.
+- **Say what you're planning:** *"Plan a weekend in Lisbon"*. She writes the page while you watch: `App.svelte`, then one component per section.
+- **Use the page.** It's live. An action that settles something switches on the spot (*Reserve room* → *Room reserved*). An action that shows more calls `ask()`, and she writes a new section right below the one you pressed.
+- **Ask for more.** *Anything else?* changes the page or adds to it.
+- **Read the code.** *Code* shows every file she wrote, next to what the design check found.
+- **See what she builds with.** The *Library* shows every part of the design system, live, and its tokens.
+- **Keep several pages.** They stay in your browser.
 
-| An action adds a section below | Loading and errors stay in their section |
-|---|---|
-| ![](docs/screenshots/os-open-action.png) | ![](docs/screenshots/os-states.png) |
+![The page being written, the code arriving](docs/screenshots/writing.png)
 
-| Gift for a runner | Dinner for six | Coffee with Mara |
-|---|---|---|
-| ![](docs/screenshots/os-page-2.png) | ![](docs/screenshots/os-page-3.png) | ![](docs/screenshots/os-page-4.png) |
+| *Castle tickets*, pressed | Gift for a runner | Dinner for six | Coffee with Mara |
+|---|---|---|---|
+| ![](docs/screenshots/ask.png) | ![](docs/screenshots/page-gift.png) | ![](docs/screenshots/page-dinner.png) | ![](docs/screenshots/page-coffee.png) |
 
-## Generated on the spot, kept on design
+## Free code, kept on design
 
-Letting a model generate UI live usually means one of two things: it looks great once and drifts every time after, or it's so constrained it can't surprise you. Here the model has a lot of room (any task, any content, any mix of sections), but it **never writes UI**. It fills in a fixed vocabulary, and the design system draws it.
+Letting a model generate UI usually ends one of two ways: it looks great once and drifts every time after, or it's boxed into a fixed set of blocks and can't surprise you. Here the model writes real code, with its own markup, styles, state and blocks (a seat map, a time-slot picker), and a design guideline holds it: checked in the code, not hoped for in the prompt.
 
 ```
-intention ──► model ──► JSON in the page vocabulary ──► validator ──► design-system components
-                                                       (guardrail)
+intention ──► model ──► Svelte files ──► design check ──► Svelte REPL (compiles, runs in a sandboxed frame)
+                ▲                            │
+                └────── one repair round ◄───┘
 ```
 
-1. **The vocabulary** ([`src/lib/os/spec.ts`](src/lib/os/spec.ts)): a page is a title, a lede and up to six sections. A section is a title, an optional kicker, up to six blocks and up to three actions. The blocks: text, meta, price, a map with up to four places, a table with a recommended row, a summary with a total, a checklist, a list, media, art. There is no block for HTML, no colour, no font, no layout.
-2. **The validator** ([`src/lib/os/sanitize.ts`](src/lib/os/sanitize.ts)) drops unknown blocks and fields, caps every string and count, evens out table rows, and keeps one map and one primary action per section. Every rule has a test.
-3. **One repair round:** if a reply is unusable (not JSON, no sections), the server tells the model what was wrong once, then gives up with a clear error.
-4. **The renderer** ([`SpecSection.svelte`](src/lib/os/components/SpecSection.svelte)) maps each block to a design-system part. It's the only way anything reaches the page.
+1. **The design system is a library** ([`src/lib/design/`](src/lib/design)): Canvas, Page, Section, Action, Table, MapView, Summary, Checklist and more, plus the tokens for colour, type, space and motion. Its files are seeded into every page's workspace as `design/` and imported as `'design'`. They're locked: anything the model writes there is dropped.
+2. **The guideline** ([`page-prompt.ts`](src/lib/server/page-prompt.ts)) gives the model room (its own markup, styles and state) and sets the lines: colours and fonts only through the tokens, everything in a section, one primary action per section, no cards in cards, no emoji, no images from the web, no imports beyond the design system, Svelte and Phosphor icons.
+3. **The design check** ([`design-check.ts`](src/lib/server/design-check.ts)) reads each file's Svelte syntax tree and follows the page as it renders, from `App.svelte` through the page's own components, snippets and either branch of an `{#if}`. So a helper used inside a section isn't mistaken for content outside one. Thirteen rules, each with a stable code: `raw_color`, `raw_font`, `content_outside_section`, `nested_section`, `extra_primary`, `foreign_import` and more.
+4. **One repair round.** What the check finds goes back to the model on its own, while the page already shows. Whatever survives shows as *2 things outside the lines*, with *Fix*. A page that doesn't compile or throws gets *Fix it*, which sends the error back with the code.
+5. **Every rule has two tests:** one that it fires, and one that the nearest legitimate pattern passes. A false finding costs a repair round, so the passes matter as much.
 
-The model can't produce an off-design page, because there is nothing off-design for it to say. The [Library](src/routes/library/+page.svelte) shows every section the vocabulary allows, drawn by the same renderer; a test makes sure it covers every block type.
+![The code view: the files she wrote, next to the design check](docs/screenshots/code.png)
 
-![The Library](docs/screenshots/library.png)
+Google's [Generative UI](https://research.google/blog/generative-ui-a-rich-custom-visual-interactive-user-experience-for-any-prompt/) (2025) has Gemini design and code a custom interface for each prompt, in a look of its own each time. This experiment asks the other question: how much freedom can a model have while every page stays on one design system?
 
 ## The design
 
 The pages follow Klementine's design system: flat and warm, light or dark with your system, depth from fine lines rather than shadows. One primary action per section, in the page's own ink. Orange belongs to the assistant and to the words that say when something happens: her face, and the times in a day plan. Type is Instrument Sans, icons are [Phosphor](https://phosphoricons.com).
 
-Her face in the input follows the pointer, with the gaze maths of Klementine's companion, and shows how she's doing: listening while you type, working while a page is built, needing you when a section failed.
+Her face in the input follows the pointer, with the gaze maths of Klementine's companion, and shows how she's doing: listening while you type, working while a page is written, needing you when something failed.
 
-![The same page in dark](docs/screenshots/os-hero-dark.png)
+![The same page in dark](docs/screenshots/hero-dark.png)
+
+The [Library](src/routes/library/+page.svelte) is the design system as the model sees it: every part it imports from `'design'`, live, and the tokens its own markup is drawn with. A test makes sure it shows every part the system exports.
+
+![The Library](docs/screenshots/library.png)
 
 ## How it's built
 
 | Path | What |
 |---|---|
-| `src/routes/+page.svelte` | The pages: top bar, page, the input |
-| `src/routes/library/` | The Library |
-| `src/lib/os/` | Page vocabulary, validator (+ tests), Library sections (+ test), client state, components |
-| `src/routes/api/os/` | Builds pages and sections: replay cache → model → validator → repair round |
-| `src/lib/design/` | The design system: Canvas (the tokens), Page, Section, Action, MapView, Table, Summary, Checklist, … |
+| `src/routes/+page.svelte` | The app: the tabs, the page, the input |
+| `src/routes/api/page/` | Writes a page or a change as a stream: recording or model, then the design check |
+| `src/lib/server/design-check.ts` | The design check (+ tests) |
+| `src/lib/server/page-prompt.ts` | The guideline, as the model reads it |
+| `src/lib/pages/` | Client state, the REPL, the code view |
+| `src/lib/app/` | The app's own parts: the input with her face, the tabs, the examples |
+| `src/lib/design/` | The design system the pages are built from |
+| `src/routes/library/` | The Library (+ test) |
 | `src/lib/server/ai/` | Providers: Anthropic, plus one adapter for the OpenAI-compatible Chat Completions API (OpenAI, Mistral) |
-| `os-demo/` | Recorded examples, replayed without a key |
+| `vendor/repl/` | Svelte's REPL, vendored: the bundler, the sandboxed viewer, the editor |
+| `recordings/` | Recorded answers, replayed without a key |
 
-**Recordings.** Every result is cached by *what was clicked* (the intention, or the section and action), so the same click replays the same answer in any order. A recording keeps the model's reply as it came, and replays pass the validator again, so recordings follow every change to the vocabulary. New results land in `.os-cache/` (gitignored); `npm run record` clicks through the four examples and records what's missing; copy files into `os-demo/` to ship them.
+**Recordings.** Every answer is recorded under a key made of the request: what was asked, and the page's code at that moment. The same request replays the same answer, and a replay passes the design check again. `npm run record` drives the real app through the four examples and every `ask()` on their first page, asks again for any answer that doesn't pass the check first time or doesn't run, and leaves `recordings/` holding exactly those answers. A test checks that each one still replays and still passes, so a change to the check says which to record again.
 
-**Checks:** `npm test` (validator and Library), `npm run check` (types), `npm run screenshots` (regenerates `docs/screenshots/` against a dev server on port 5199).
+**Checks:** `npm test` (the design check, the recordings, the Library), `npm run check` (types), `npm run screenshots` (regenerates `docs/screenshots/` against a dev server on port 5199).
 
 ## Credits
 
 - Where it started: Jason Yuan's [Mercury OS](https://uxdesign.cc/introducing-mercury-os-f4de45a04289) (2019), an OS built around intentions.
 - **Klementine** ([klementine.net](https://klementine.net)): the design system, the face and the voice.
+- The [Svelte REPL](https://github.com/sveltejs/svelte.dev/tree/main/packages/repl) (MIT), which compiles and runs every page.
 - [Phosphor](https://phosphoricons.com) icons, [Instrument Sans](https://fonts.google.com/specimen/Instrument+Sans), [SvelteKit](https://svelte.dev).
 
 ## License

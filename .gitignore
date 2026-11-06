@@ -25,5 +25,5 @@ vite.config.ts.timestamp-*
 # vendored package builds its own nothing — but never commit its node_modules if npm ever creates one
 vendor/repl/node_modules
 
-# OS: locally generated module recordings (copy into os-demo/ to ship them)
-.os-cache
+# Pages generated locally (copy into recordings/ to ship them)
+.page-cache

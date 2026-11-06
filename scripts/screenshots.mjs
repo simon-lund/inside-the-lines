@@ -1,130 +1,155 @@
-// Screenshot tour for the README: the recorded example pages, an opened section, the
-// loading and error states, and the Library.
+// Screenshot tour for the README: a page being written, the recorded example pages, an ask()
+// from inside a page, the code view with the design check, the Library, and the hero in dark.
 //
 //   npm run dev -- --port 5199     # in another terminal
 //   npm run screenshots            # writes docs/screenshots/*.png
 //
-// Uses the system Chrome. The pages replay the recordings in os-demo/, so no API key is needed.
+// Uses the system Chrome. The pages replay the recordings in recordings/, so no API key is
+// needed, but the REPL loads Svelte from a CDN, so it needs the network.
+//
+//   npm run screenshots -- <dir> --review   # also the empty state, an error and the phone
 import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:5199';
-const OUT = process.argv[2] ?? 'docs/screenshots';
+const args = process.argv.slice(2);
+const OUT = args.find((a) => !a.startsWith('--')) ?? 'docs/screenshots';
+const REVIEW = args.includes('--review');
+const VIEWPORT = { width: 1512, height: 945 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const LISBON = 'Plan a weekend in Lisbon';
+const GIFT = 'Find a birthday gift for my sister who runs';
+const DINNER = 'Dinner for six on Saturday';
+const COFFEE = 'Coffee with Mara tomorrow at 3';
 
 async function shot(page, name) {
 	await page.screenshot({ path: path.join(OUT, `${name}.png`) });
 	console.log('saved', name);
 }
 
-// The whole page sheet, however tall. The docked composer is pinned to the window, so it
-// would land in the middle of a tall capture: it steps aside for the shot.
+// The whole page sheet, however tall: the window grows until the sheet fits in the frame, and
+// the docked composer, pinned to the window, steps aside.
 async function sheet(page, name) {
-	const dock = (visibility) => page.evaluate((v) => document.querySelector('.dock')?.style.setProperty('visibility', v), visibility);
-	await dock('hidden');
-	await page.locator('article.m-page').screenshot({ path: path.join(OUT, `${name}.png`) });
-	await dock('');
+	const size = page.viewportSize();
+	await page.setViewportSize({ width: size.width, height: 6000 });
+	await page.evaluate(() => document.querySelector('.dock')?.style.setProperty('visibility', 'hidden'));
+	await sleep(1200);
+	await page.frameLocator('iframe').locator('article.m-page').screenshot({ path: path.join(OUT, `${name}.png`) });
+	await page.evaluate(() => document.querySelector('.dock')?.style.removeProperty('visibility'));
+	await page.setViewportSize(size);
 	console.log('saved', name);
 }
 
-// Waits until no section is still assembling.
-async function settled(page) {
-	await page.waitForFunction(() => !document.querySelector('[aria-busy="true"]'), null, { timeout: 120000 });
-	await sleep(700); // entry transitions
+async function start(browser, options = {}) {
+	const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 2, colorScheme: 'light', ...options });
+	const page = await context.newPage();
+	await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+	await page.waitForFunction(() => !!window.__pages?.health && !!window.__repl, null, { timeout: 30000 });
+	await page.evaluate(() => {
+		localStorage.clear();
+		for (const p of [...window.__pages.pages]) window.__pages.close(p.key);
+	});
+	await sleep(500);
+	return page;
 }
+
+// Runs `act`, then waits until the answer is in and the new code has mounted.
+async function settle(page, act) {
+	await page.evaluate(() => (window.__before = window.__repl.bundler.result));
+	await act();
+	await page.waitForFunction(
+		() =>
+			window.__pages.active &&
+			window.__pages.activityOf(window.__pages.active.key).status === 'idle' &&
+			window.__repl.status === null &&
+			window.__repl.bundler.result !== window.__before,
+		null,
+		{ timeout: 120000 }
+	);
+	await sleep(2500); // fonts, the map, entry transitions
+}
+
+const open = (page, intent) => settle(page, () => page.evaluate((i) => window.__pages.newPage(i), intent));
 
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', args: ['--no-proxy-server'] });
 
 try {
-	const ctx = await browser.newContext({ viewport: { width: 1512, height: 945 }, deviceScaleFactor: 2 });
-	const page = await ctx.newPage();
+	const page = await start(browser);
+	if (REVIEW) await shot(page, 'review-empty');
 
-	// ---- OS
-	await page.goto(BASE, { waitUntil: 'domcontentloaded' });
-	await page.waitForFunction(() => !!window.__os?.health, null, { timeout: 30000 });
-	await page.evaluate(() => {
-		localStorage.clear();
-		window.__os.spaces = [];
-		window.__os.activeKey = null;
+	// Svelte comes from the CDN once; after that a replay is quick.
+	await open(page, DINNER);
+
+	// A page being written: the replay, slowed down so the code can be seen arriving.
+	const cdp = await page.context().newCDPSession(page);
+	await cdp.send('Network.enable');
+	await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: 1500, uploadThroughput: -1 });
+	await page.evaluate((i) => window.__pages.newPage(i), LISBON);
+	await page.waitForFunction(() => (document.querySelector('.writing .code')?.textContent ?? '').split('\n').length >= 18, null, {
+		timeout: 60000
 	});
-	await sleep(300);
+	await shot(page, 'writing');
+	await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+	await page.waitForFunction(() => window.__pages.activityOf(window.__pages.active.key).status === 'idle', null, { timeout: 60000 });
+	await page.waitForFunction(() => window.__repl.status === null && !!window.__repl.bundler.result, null, { timeout: 60000 });
+	await sleep(3000);
+	await shot(page, 'hero');
 
-	const intents = await page.evaluate(() =>
-		[...document.querySelectorAll('.examples button')].map((b) => b.textContent.trim())
-	);
-	for (const [i, intent] of intents.entries()) {
-		await page.evaluate((x) => window.__os.newSpace(x), intent);
-		await settled(page);
-		await page.evaluate(() => window.scrollTo(0, 0));
-		// The first page is the hero; the open-action shot shows it whole.
-		if (i === 0) await shot(page, 'os-hero');
-		else await sheet(page, `os-page-${i + 1}`);
-	}
+	// A button inside the page calls ask(): a new section, right below the one that asked.
+	await settle(page, () => page.frameLocator('iframe').getByRole('button', { name: 'Castle tickets' }).click());
+	await sheet(page, 'ask');
 
-	// An "open" action: the first recorded one on the first page.
-	await page.evaluate(() => (window.__os.activeKey = window.__os.spaces[0].key));
-	await sleep(500);
-	const opened = await page.evaluate(() => {
-		const os = window.__os;
-		for (const cell of os.active.cells) {
-			for (const item of cell.items) {
-				const action = item.status === 'ready' && item.section.actions.find((a) => a.effect === 'open');
-				if (action) {
-					os.open(cell.key, item.key, action);
-					return action.label;
-				}
-			}
-		}
-		return null;
-	});
-	if (opened) {
-		await settled(page);
-		await sheet(page, 'os-open-action');
-	}
+	await open(page, GIFT);
+	await sheet(page, 'page-gift');
+	await page.evaluate((i) => window.__pages.select(window.__pages.pages.find((p) => p.intent === i).key), DINNER);
+	await sleep(4000);
+	await sheet(page, 'page-dinner');
+	await open(page, COFFEE);
+	await sheet(page, 'page-coffee');
 
-	// Loading and error, as a follow-up cell at the end of the first page.
-	await page.evaluate(() => {
-		window.__os.active.cells.push({
-			key: 'demo-cell',
-			intent: 'Find a dinner place near the guesthouse',
-			items: [
-				{ key: 'demo-pending', status: 'pending', request: { mode: 'section', intent: 'Dinner places near the guesthouse' } },
-				{ key: 'demo-failed', status: 'failed', request: { mode: 'section', intent: 'Book a table for two' }, code: 'provider_rate_limit' }
-			]
+	// The code view: the gift page, at the section with a block of its own.
+	await page.evaluate((i) => window.__pages.select(window.__pages.pages.find((p) => p.intent === i).key), GIFT);
+	await sleep(4000);
+	await page.click('.toggle');
+	await page.getByRole('button', { name: 'lib/ThePick.svelte' }).click();
+	await sleep(800);
+	await shot(page, 'code');
+	await page.click('.toggle');
+
+	if (REVIEW) {
+		// A page that throws: the error card, and "Fix it" in the dock.
+		await page.evaluate(async () => {
+			const files = window.__pages.active.files.map((f) =>
+				f.name === 'App.svelte' ? f : { ...f, contents: f.contents.replace('</Section>', '<p>{oops.value}</p>\n</Section>') }
+			);
+			await window.__repl.load(files);
 		});
-	});
-	await sleep(900);
-	await page.evaluate(() => document.querySelector('[aria-busy="true"]')?.scrollIntoView({ block: 'center' }));
-	await sleep(500);
-	await shot(page, 'os-states');
-	await page.evaluate(() => {
-		window.__os.active.cells = window.__os.active.cells.filter((c) => c.key !== 'demo-cell');
-	});
+		await sleep(3000);
+		await shot(page, 'review-error');
+	}
 
-	// ---- Library
+	// The Library: the design system, live, however tall.
 	await page.goto(`${BASE}/library`, { waitUntil: 'networkidle' });
-	await sleep(500);
-	await sheet(page, 'library');
+	await sleep(800);
+	await page.locator('article.m-page').screenshot({ path: path.join(OUT, 'library.png') });
+	console.log('saved', 'library');
+	await page.context().close();
 
-	await ctx.close();
+	const dark = await start(browser, { colorScheme: 'dark' });
+	await open(dark, LISBON);
+	await shot(dark, 'hero-dark');
+	await dark.context().close();
 
-	// ---- The hero again, in dark (the theme is dark first)
-	const dark = await browser.newContext({ viewport: { width: 1512, height: 945 }, deviceScaleFactor: 2, colorScheme: 'dark' });
-	const darkPage = await dark.newPage();
-	await darkPage.goto(BASE, { waitUntil: 'domcontentloaded' });
-	await darkPage.waitForFunction(() => !!window.__os?.health, null, { timeout: 30000 });
-	await darkPage.evaluate((x) => {
-		localStorage.clear();
-		window.__os.spaces = [];
-		window.__os.newSpace(x);
-	}, intents[0]);
-	await settled(darkPage);
-	await darkPage.evaluate(() => window.scrollTo(0, 0));
-	await sleep(300);
-	await shot(darkPage, 'os-hero-dark');
-	await dark.close();
+	if (REVIEW) {
+		const phone = await start(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+		await shot(phone, 'review-phone-empty');
+		await open(phone, DINNER);
+		await shot(phone, 'review-phone-page');
+		await phone.context().close();
+	}
 } finally {
 	await browser.close();
 }

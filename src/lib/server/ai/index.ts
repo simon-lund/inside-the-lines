@@ -1,12 +1,12 @@
-import { completeAnthropic } from './anthropic';
+import { streamAnthropic } from './anthropic';
 import type { AiConfig } from './config';
-import { completeOpenAiCompatible } from './openai-compatible';
-import type { JsonRequest } from './types';
+import { streamOpenAiCompatible } from './openai-compatible';
+import type { TextEvent, TextRequest } from './types';
 
 export { resolveAiConfig, intendedProvider, PROVIDERS, type AiConfig, type ProviderId } from './config';
-export { ProviderError } from './types';
+export { ProviderError, type TextEvent } from './types';
 
-/** One non-streamed answer, expected to be JSON. */
-export function completeJson(cfg: AiConfig, req: JsonRequest): Promise<string> {
-	return cfg.provider === 'anthropic' ? completeAnthropic(cfg, req) : completeOpenAiCompatible(cfg, req);
+/** Streams prose and code from the model. */
+export function streamText(cfg: AiConfig, req: TextRequest): AsyncGenerator<TextEvent> {
+	return cfg.provider === 'anthropic' ? streamAnthropic(cfg, req) : streamOpenAiCompatible(cfg, req);
 }

@@ -6,7 +6,7 @@ export type ProviderId = 'anthropic' | 'openai' | 'mistral';
 export interface AiConfig {
 	provider: ProviderId;
 	apiKey: string;
-	/** Assembles modules, one call per click — fast beats clever here. */
+	/** Writes the pages as code — a capable model pays off here. */
 	model: string;
 }
 
@@ -16,9 +16,9 @@ interface ProviderDefaults {
 }
 
 export const PROVIDERS: Record<ProviderId, ProviderDefaults> = {
-	anthropic: { keyVar: 'ANTHROPIC_API_KEY', model: 'claude-sonnet-5-5' },
-	openai: { keyVar: 'OPENAI_API_KEY', model: 'gpt-6-luna' },
-	mistral: { keyVar: 'MISTRAL_API_KEY', model: 'mistral-small-latest' }
+	anthropic: { keyVar: 'ANTHROPIC_API_KEY', model: 'claude-opus-5-5' },
+	openai: { keyVar: 'OPENAI_API_KEY', model: 'gpt-6-astra' },
+	mistral: { keyVar: 'MISTRAL_API_KEY', model: 'mistral-large-latest' }
 };
 
 const ORDER: ProviderId[] = ['anthropic', 'openai', 'mistral'];
