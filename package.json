@@ -2,7 +2,7 @@
 	"name": "inside-the-lines",
 	"private": true,
 	"version": "0.0.1",
-	"license": "UNLICENSED",
+	"license": "SEE LICENSE IN LICENSE",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",

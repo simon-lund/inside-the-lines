@@ -101,4 +101,4 @@ The [Library](src/routes/library/+page.svelte) is the design system as the model
 
 ## License
 
-The code is public to read, not open source: © 2026 Simon Lund. All rights reserved. The vendored Svelte REPL keeps its own MIT licence.
+MIT, except Klementine's face: `KlementineFace.svelte`, `face-paths.ts` and the screenshots that show it stay © 2026 Simon Lund, all rights reserved. The vendored Svelte REPL keeps its own MIT licence. See [`LICENSE`](LICENSE).
